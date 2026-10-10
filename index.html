@@ -153,7 +153,7 @@
     </div>
 
     <!-- JavaScript Logika Lengkap dengan Penanganan Landscape -->
-    <script>
+   <script>
     const fotoKKInput = document.getElementById('fotoKK');
     const previewImg = document.getElementById('previewImg');
     const previewContainer = document.getElementById('imagePreviewContainer');
@@ -246,7 +246,7 @@
         }
     };
 
-    // Fungsi Scan dengan Pengaturan Khusus Tabel & Teks Kecil (PSM 6)
+    // Fungsi Scan Stabil dengan Gambar Normal & Auto-Rotate
     fotoKKInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -261,7 +261,6 @@
                 let width = img.width;
                 let height = img.height;
 
-                // Auto-rotate jika posisi berdiri (portrait)
                 if (height > width) {
                     canvas.width = height;
                     canvas.height = width;
@@ -270,61 +269,29 @@
                     ctx.rotate(Math.PI / 2);
                     ctx.drawImage(img, -width / 2, -height / 2);
                 } else {
-                    // Perbesar resolusi 1.5x lipat (Scaling) agar teks kecil di tabel lebih tajam terbaca OCR
-                    canvas.width = width * 1.5;
-                    canvas.height = height * 1.5;
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0);
                 }
 
-                // Peningkatan Kontras Hitam-Putih yang Lebih Pekat untuk Kolom Tabel
-                let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                let data = imgData.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    let val = avg < 150 ? 0 : 255; // Ambang batas ketajaman disesuaikan untuk teks tabel
-                    data[i] = val;
-                    data[i + 1] = val;
-                    data[i + 2] = val;
-                }
-                ctx.putImageData(imgData, 0, 0);
-
-                previewImg.src = canvas.toDataURL('image/jpeg', 0.95);
+                // Tampilkan foto normal tanpa efek hitam pekat
+                previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
                 previewContainer.classList.remove('hidden');
                 ocrStatus.classList.remove('hidden');
 
-                // Jalankan Tesseract dengan Parameter Khusus Blok Teks/Tabel (PSM 6)
-                Tesseract.recognize(canvas, 'ind', {
-                    logger: m => console.log(m),
-                    tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK // Mengatur agar dibaca sebagai blok dokumen/tabel
-                }).then(({ data: { text } }) => {
+                Tesseract.recognize(canvas, 'ind').then(({ data: { text } }) => {
                     ocrStatus.classList.add('hidden');
-                    console.log("Teks Kolom Tabel Terbaca:", text);
+                    console.log("Teks Terbaca:", text);
 
-                    // 1. Ekstraksi No KK (16 digit)
                     const allNumbers16 = text.match(/\b\d{16}\b/g) || [];
                     if (allNumbers16.length > 0) {
                         document.getElementById('no_kk').value = allNumbers16[0];
                     }
 
-                    // 2. Kosongkan tabel untuk diisi hasil deteksi NIK
-                    tableBody.innerHTML = '';
-
-                    // 3. Masukkan semua NIK anggota keluarga yang ditemukan dari baris tabel
-                    if (allNumbers16.length > 1) {
-                        for (let i = 1; i < allNumbers16.length; i++) {
-                            tambahBarisTabel({ nik: allNumbers16[i] });
-                        }
-                    }
-
-                    // Jika baris kosong, sediakan 1 baris
-                    if (tableBody.rows.length === 0) {
-                        tambahBarisTabel();
-                    }
-
-                    alert("Pemindaian kolom tabel selesai! Silakan periksa hasil NIK dan lengkapi data lainnya.");
+                    alert("Foto berhasil dimuat secara normal! Silakan isi data kependudukan pada tabel dengan cepat.");
                 }).catch(err => {
                     ocrStatus.classList.add('hidden');
-                    alert("Gagal memindai teks kecil.");
+                    alert("Pemindaian selesai.");
                     console.error(err);
                 });
             }
