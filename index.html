@@ -247,6 +247,7 @@
             }
         };
 
+        // Proses Scan Foto KK dengan Penanganan Landscape & Deteksi NIK Massal
         fotoKKInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -256,42 +257,60 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
                     let width = img.width;
                     let height = img.height;
 
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
+                    // Otomatis putar gambar jika posisi foto berdiri (portrait)
+                    if (height > width) {
+                        canvas.width = height;
+                        canvas.height = width;
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.translate(canvas.width / 2, canvas.height / 2);
+                        ctx.rotate(Math.PI / 2);
+                        ctx.drawImage(img, -width / 2, -height / 2);
+                    } else {
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0);
+                    }
 
                     previewImg.src = canvas.toDataURL('image/jpeg');
                     previewContainer.classList.remove('hidden');
 
                     ocrStatus.classList.remove('hidden');
 
+                    // Jalankan Tesseract OCR
                     Tesseract.recognize(canvas, 'ind').then(({ data: { text } }) => {
                         ocrStatus.classList.add('hidden');
+                        console.log("Teks Hasil Scan:", text);
 
-                        const noKkMatch = text.match(/\b\d{16}\b/);
-                        if (noKkMatch) {
-                            document.getElementById('no_kk').value = noKkMatch[0];
+                        // Cari semua angka 16 digit yang ada di seluruh teks KK
+                        const allNumbers16 = text.match(/\b\d{16}\b/g) || [];
+
+                        // 1. Ambil nomor pertama sebagai No. KK
+                        if (allNumbers16.length > 0) {
+                            document.getElementById('no_kk').value = allNumbers16[0];
                         }
 
-                        const allNik = text.match(/\b\d{16}\b/g) || [];
+                        // 2. Kosongkan tabel sebelum diisi hasil scan
                         tableBody.innerHTML = '';
-                        
-                        if (allNik.length > 1) {
-                            allNik.forEach((nikVal, index) => {
-                                if (index === 0 && noKkMatch && nikVal === noKkMatch[0]) return;
-                                tambahBarisTabel({ nik: nikVal });
-                            });
-                        } 
-                        
+
+                        // 3. Masukkan sisa angka 16 digit ke dalam baris NIK anggota keluarga
+                        if (allNumbers16.length > 1) {
+                            // Mulai dari indeks ke-1 (karena indeks ke-0 adalah No. KK)
+                            for (let i = 1; i < allNumbers16.length; i++) {
+                                tambahBarisTabel({ nik: allNumbers16[i] });
+                            }
+                        }
+
+                        // Jika tidak ada NIK lain yang tertangkap kamera, buatkan 1 baris kosong
                         if (tableBody.rows.length === 0) {
                             tambahBarisTabel();
                         }
 
-                        alert("Pemindaian selesai! Silakan periksa dan lengkapi data pada tabel.");
+                        alert("Pemindaian foto selesai! No. KK dan NIK anggota keluarga telah dimasukkan ke tabel secara otomatis. Silakan lengkapi atau koreksi datanya.");
                     }).catch(err => {
                         ocrStatus.classList.add('hidden');
                         alert("Gagal memindai gambar. Silakan isi data secara manual.");
@@ -302,7 +321,6 @@
             }
             reader.readAsDataURL(file);
         });
-
         const kkForm = document.getElementById('kkForm');
         const submitBtn = document.getElementById('submitBtn');
         const statusMessage = document.getElementById('statusMessage');
