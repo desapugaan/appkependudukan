@@ -247,7 +247,7 @@
             }
         };
 
-       / Proses Scan Foto KK Tanpa Paksaan Rotasi (Akurat untuk Foto Posisi Landscape)
+      // Proses Scan Foto KK dengan Kompresi Otomatis agar Foto Pasti Muncul
         fotoKKInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -259,56 +259,49 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // Gunakan ukuran asli gambar tanpa memutar paksa orientasinya
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
+                    // Batasi ukuran maksimal gambar agar tidak memberatkan browser, tapi tetap jelas dibaca
+                    let MAX_WIDTH = 1200;
+                    let width = img.width;
+                    let height = img.height;
 
-                    // Pemrosesan Kontras Hitam-Putih agar teks tabel lebih tajam
-                    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    let data = imgData.data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                        let val = avg < 140 ? 0 : 255; 
-                        data[i] = val;
-                        data[i + 1] = val;
-                        data[i + 2] = val;
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
                     }
-                    ctx.putImageData(imgData, 0, 0);
 
-                    previewImg.src = canvas.toDataURL('image/jpeg');
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Tampilkan gambar ke kotak pratinjau dengan aman
+                    previewImg.src = canvas.toDataURL('image/jpeg', 0.85);
                     previewContainer.classList.remove('hidden');
                     ocrStatus.classList.remove('hidden');
 
-                    // Jalankan Tesseract OCR untuk membaca seluruh teks
+                    // Jalankan Tesseract OCR
                     Tesseract.recognize(canvas, 'ind').then(({ data: { text } }) => {
                         ocrStatus.classList.add('hidden');
-                        console.log("Hasil Teks Lengkap:", text);
+                        console.log("Teks Terbaca:", text);
 
-                        // Cari semua angka 16 digit yang ada di seluruh dokumen
                         const allNumbers16 = text.match(/\b\d{16}\b/g) || [];
 
-                        // 1. Ambil nomor pertama sebagai No. KK
                         if (allNumbers16.length > 0) {
                             document.getElementById('no_kk').value = allNumbers16[0];
                         }
 
-                        // 2. Kosongkan tabel
                         tableBody.innerHTML = '';
 
-                        // 3. Masukkan sisa angka 16 digit sebagai NIK anggota keluarga ke dalam tabel
                         if (allNumbers16.length > 1) {
                             for (let i = 1; i < allNumbers16.length; i++) {
                                 tambahBarisTabel({ nik: allNumbers16[i] });
                             }
                         }
 
-                        // Jika tidak ada NIK lain yang tertangkap, buatkan 1 baris kosong
                         if (tableBody.rows.length === 0) {
                             tambahBarisTabel();
                         }
 
-                        alert("Pemindaian selesai! Silakan cek hasil NIK yang berhasil ditarik.");
+                        alert("Pemindaian selesai! Silakan periksa hasil data.");
                     }).catch(err => {
                         ocrStatus.classList.add('hidden');
                         alert("Gagal memindai gambar. Silakan isi data secara manual.");
