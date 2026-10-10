@@ -260,55 +260,75 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
-            const base64Image = e.target.result;
-            previewImg.src = base64Image;
-            previewContainer.classList.remove('hidden');
-            ocrStatus.classList.remove('hidden');
-            ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
+            const img = new Image();
+            img.onload = function() {
+                // Kompres gambar otomatis agar ukuran data aman dikirim ke server web app
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1200;
+                let scaleSize = MAX_WIDTH / img.width;
+                if (scaleSize > 1) scaleSize = 1; // Jangan perbesar jika sudah kecil
 
-            fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "ocr_ai", image: base64Image })
-            })
-            .then(res => res.json())
-            .then(data => {
-                ocrStatus.classList.add('hidden');
-                console.log("Hasil AI Vision:", data);
+                canvas.width = img.width * scaleSize;
+                canvas.height = img.height * scaleSize;
 
-                if (data.no_kk) {
-                    document.getElementById('no_kk').value = data.no_kk;
-                }
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                tableBody.innerHTML = '';
-                if (data.anggota && data.anggota.length > 0) {
-                    data.anggota.forEach(orang => {
-                        tambahBarisTabel({
-                            nik: orang.nik || '',
-                            nama: orang.nama || '',
-                            jk: orang.jk || 'L',
-                            tempat: orang.tempat_lahir || '',
-                            tgl: orang.tgl_lahir || '',
-                            agama: orang.agama || 'ISLAM',
-                            pend: orang.pendidikan || '',
-                            pek: orang.pekerjaan || '',
-                            status_nikah: orang.status_perkawinan || 'KAWIN',
-                            status_hub: orang.hubungan || 'ANAK',
-                            ayah: orang.ayah || '',
-                            ibu: orang.ibu || ''
+                // Ubah ke format compressed base64 JPEG kualitas 0.8
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+                // Tampilkan ke pratinjau dengan pasti
+                previewImg.src = compressedBase64;
+                previewContainer.classList.remove('hidden');
+                ocrStatus.classList.remove('hidden');
+                ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
+
+                // Kirim ke backend Google Apps Script
+                fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "ocr_ai", image: compressedBase64 })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    ocrStatus.classList.add('hidden');
+                    console.log("Hasil AI Vision:", data);
+
+                    if (data.no_kk) {
+                        document.getElementById('no_kk').value = data.no_kk;
+                    }
+
+                    tableBody.innerHTML = '';
+                    if (data.anggota && data.anggota.length > 0) {
+                        data.anggota.forEach(orang => {
+                            tambahBarisTabel({
+                                nik: orang.nik || '',
+                                nama: orang.nama || '',
+                                jk: orang.jk || 'L',
+                                tempat: orang.tempat_lahir || '',
+                                tgl: orang.tgl_lahir || '',
+                                agama: orang.agama || 'ISLAM',
+                                pend: orang.pendidikan || '',
+                                pek: orang.pekerjaan || '',
+                                status_nikah: orang.status_perkawinan || 'KAWIN',
+                                status_hub: orang.hubungan || 'ANAK',
+                                ayah: orang.ayah || '',
+                                ibu: orang.ibu || ''
+                            });
                         });
-                    });
-                } else {
-                    tambahBarisTabel();
-                }
+                    } else {
+                        tambahBarisTabel();
+                    }
 
-                alert("Berhasil! AI Vision telah membaca seluruh isi tabel Kartu Keluarga.");
-            })
-            .catch(err => {
-                ocrStatus.classList.add('hidden');
-                alert("Gagal terhubung ke AI Vision server. Periksa koneksi atau URL Web App.");
-                console.error(err);
-                tambahBarisTabel();
-            });
+                    alert("Berhasil! AI Vision telah membaca seluruh isi tabel Kartu Keluarga.");
+                })
+                .catch(err => {
+                    ocrStatus.classList.add('hidden');
+                    alert("Gagal terhubung ke AI Vision server.");
+                    console.error(err);
+                    tambahBarisTabel();
+                });
+            }
+            img.src = e.target.result;
         }
         reader.readAsDataURL(file);
     });
