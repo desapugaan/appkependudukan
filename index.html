@@ -153,7 +153,7 @@
         <div id="statusMessage" class="mt-4 text-center text-sm font-medium hidden"></div>
     </div>
 
-    <!-- JavaScript Logika Lengkap -->
+    <!-- JavaScript Logika Lengkap dengan Penanganan Landscape -->
     <script>
         const fotoKKInput = document.getElementById('fotoKK');
         const previewImg = document.getElementById('previewImg');
@@ -161,7 +161,6 @@
         const ocrStatus = document.getElementById('ocrStatus');
         const tableBody = document.getElementById('tableBody');
 
-        // Fungsi Hitung Umur
         function hitungUmur(tglLahirString) {
             if (!tglLahirString) return "";
             const dob = new Date(tglLahirString);
@@ -175,7 +174,6 @@
             return age >= 0 ? age + " Thn" : "0 Thn";
         }
 
-        // Event listener delegasi untuk update umur otomatis saat tanggal lahir diubah
         tableBody.addEventListener('change', function(e) {
             if (e.target && e.target.classList.contains('tgl-val')) {
                 const row = e.target.closest('tr');
@@ -184,7 +182,6 @@
             }
         });
 
-        // Tambah baris manual dengan seluruh kolom
         document.getElementById('addRowBtn').addEventListener('click', function() {
             tambahBarisTabel();
         });
@@ -250,55 +247,66 @@
             }
         };
 
-        // Proses Scan Foto KK
         fotoKKInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                previewContainer.classList.remove('hidden');
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    previewImg.src = canvas.toDataURL('image/jpeg');
+                    previewContainer.classList.remove('hidden');
+
+                    ocrStatus.classList.remove('hidden');
+
+                    Tesseract.recognize(canvas, 'ind').then(({ data: { text } }) => {
+                        ocrStatus.classList.add('hidden');
+
+                        const noKkMatch = text.match(/\b\d{16}\b/);
+                        if (noKkMatch) {
+                            document.getElementById('no_kk').value = noKkMatch[0];
+                        }
+
+                        const allNik = text.match(/\b\d{16}\b/g) || [];
+                        tableBody.innerHTML = '';
+                        
+                        if (allNik.length > 1) {
+                            allNik.forEach((nikVal, index) => {
+                                if (index === 0 && noKkMatch && nikVal === noKkMatch[0]) return;
+                                tambahBarisTabel({ nik: nikVal });
+                            });
+                        } 
+                        
+                        if (tableBody.rows.length === 0) {
+                            tambahBarisTabel();
+                        }
+
+                        alert("Pemindaian selesai! Silakan periksa dan lengkapi data pada tabel.");
+                    }).catch(err => {
+                        ocrStatus.classList.add('hidden');
+                        alert("Gagal memindai gambar. Silakan isi data secara manual.");
+                        console.error(err);
+                    });
+                }
+                img.src = e.target.result;
             }
             reader.readAsDataURL(file);
-
-            ocrStatus.classList.remove('hidden');
-
-            Tesseract.recognize(file, 'ind').then(({ data: { text } }) => {
-                ocrStatus.classList.add('hidden');
-
-                const noKkMatch = text.match(/\b\d{16}\b/);
-                if (noKkMatch) {
-                    document.getElementById('no_kk').value = noKkMatch[0];
-                }
-
-                const allNik = text.match(/\b\d{16}\b/g) || [];
-                tableBody.innerHTML = '';
-                
-                if (allNik.length > 1) {
-                    allNik.forEach((nikVal, index) => {
-                        if (index === 0 && noKkMatch && nikVal === noKkMatch[0]) return;
-                        tambahBarisTabel({ nik: nikVal });
-                    });
-                } 
-                
-                if (tableBody.rows.length === 0) {
-                    tambahBarisTabel();
-                }
-
-                alert("Pemindaian selesai! Silakan lengkapi atau koreksi kolom Umur, Jenis Kelamin, Agama, Pendidikan, Status Perkawinan, dan Status Hubungan.");
-            }).catch(err => {
-                ocrStatus.classList.add('hidden');
-                alert("Gagal memindai gambar. Silakan isi data secara manual.");
-                console.error(err);
-            });
         });
 
-        // Kirim Semua Data ke Google Apps Script
         const kkForm = document.getElementById('kkForm');
         const submitBtn = document.getElementById('submitBtn');
         const statusMessage = document.getElementById('statusMessage');
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyRLIso5gj-RBpKav9onlY5ofB-B59gCgDyOVYs5ZgprkThw7WcrYxZKSSJx-n4J9MQ3g/exec";
+        const GOOGLE_SCRIPT_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA_DI_SINI"; // Pastikan URL Apps Script Anda sudah dipasang di sini
 
         kkForm.addEventListener('submit', function(e) {
             e.preventDefault();
