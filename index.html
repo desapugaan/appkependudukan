@@ -256,17 +256,20 @@
 
     fotoKKInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {
+            alert("Tidak ada file foto yang dipilih.");
+            return;
+        }
 
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
             img.onload = function() {
-                // Kompres gambar otomatis agar ukuran data aman dikirim ke server web app
+                // Kompres ukuran gambar agar aman dikirim ke Apps Script
                 const canvas = document.createElement('canvas');
                 const MAX_WIDTH = 1200;
                 let scaleSize = MAX_WIDTH / img.width;
-                if (scaleSize > 1) scaleSize = 1; // Jangan perbesar jika sudah kecil
+                if (scaleSize > 1) scaleSize = 1;
 
                 canvas.width = img.width * scaleSize;
                 canvas.height = img.height * scaleSize;
@@ -274,16 +277,15 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                // Ubah ke format compressed base64 JPEG kualitas 0.8
                 const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
-                // Tampilkan ke pratinjau dengan pasti
+                // Tampilkan pratinjau foto ke layar web
                 previewImg.src = compressedBase64;
                 previewContainer.classList.remove('hidden');
                 ocrStatus.classList.remove('hidden');
                 ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
 
-                // Kirim ke backend Google Apps Script
+                // Kirim data ke backend Google Apps Script
                 fetch(WEB_APP_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: "ocr_ai", image: compressedBase64 })
