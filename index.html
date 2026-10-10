@@ -246,38 +246,25 @@
         }
     };
 
-    // Fungsi Scan Stabil dengan Gambar Normal & Auto-Rotate
+    // Fungsi Tampil & Scan Tanpa Paksaan Rotasi (Aman & Tidak Terbalik)
     fotoKKInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = function(e) {
+            // Langsung tampilkan foto sesuai aslinya tanpa diputar paksa
+            previewImg.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+            ocrStatus.classList.remove('hidden');
+
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
                 const ctx = canvas.getContext('2d');
-
-                let width = img.width;
-                let height = img.height;
-
-                if (height > width) {
-                    canvas.width = height;
-                    canvas.height = width;
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    ctx.rotate(Math.PI / 2);
-                    ctx.drawImage(img, -width / 2, -height / 2);
-                } else {
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0);
-                }
-
-                // Tampilkan foto normal tanpa efek hitam pekat
-                previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
-                previewContainer.classList.remove('hidden');
-                ocrStatus.classList.remove('hidden');
+                ctx.drawImage(img, 0, 0);
 
                 Tesseract.recognize(canvas, 'ind').then(({ data: { text } }) => {
                     ocrStatus.classList.add('hidden');
@@ -288,7 +275,7 @@
                         document.getElementById('no_kk').value = allNumbers16[0];
                     }
 
-                    alert("Foto berhasil dimuat secara normal! Silakan isi data kependudukan pada tabel dengan cepat.");
+                    alert("Foto berhasil dimuat! Silakan isi data pendudukan pada tabel dengan cepat dan mudah.");
                 }).catch(err => {
                     ocrStatus.classList.add('hidden');
                     alert("Pemindaian selesai.");
@@ -299,6 +286,7 @@
         }
         reader.readAsDataURL(file);
     });
+</script>
 </script>
 </body>
 </html>
