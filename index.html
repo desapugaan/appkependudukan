@@ -254,86 +254,116 @@
     const ocrStatus = document.getElementById('ocrStatus');
     const tableBody = document.getElementById('tableBody');
 
+    let base64ImageGlobal = "";
+
+    // 1. Tangkap foto/berkas dan pastikan tampil di pratinjau web dulu
     fotoKKInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        if (!file) {
-            console.log("Tidak ada file yang dipilih.");
-            return;
-        }
+        if (!file) return;
 
-        console.log("File diterima:", file.name, file.size);
         ocrStatus.classList.remove('hidden');
-        ocrStatus.textContent = "⏳ Memuat foto ke web...";
+        ocrStatus.textContent = "⏳ Memuat foto ke layar web...";
 
         const reader = new FileReader();
         reader.onload = function(event) {
-            const base64String = event.target.result;
-            
-            // Tampilkan langsung ke pratinjau agar dipastikan tidak kosong
-            previewImg.src = base64String;
-            previewContainer.classList.remove('hidden');
-            ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
+            const img = new Image();
+            img.onload = function() {
+                // Kompres gambar agar ukurannya ringan dan aman untuk browser & server
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1000;
+                let scaleSize = MAX_WIDTH / img.width;
+                if (scaleSize > 1) scaleSize = 1;
 
-            // Kirim langsung data gambar ke Google Apps Script
-            fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "ocr_ai", image: base64String })
-            })
-            .then(res => res.json())
-            .then(data => {
-                ocrStatus.classList.add('hidden');
-                console.log("Respon dari AI:", data);
+                canvas.width = img.width * scaleSize;
+                canvas.height = img.height * scaleSize;
 
-                if (data.error) {
-                    alert("Catatan AI: " + data.error);
-                    tambahBarisTabel();
-                    return;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Simpan hasil kompresi ke variabel global
+                base64ImageGlobal = canvas.toDataURL('image/jpeg', 0.75);
+
+                // Tampilkan ke pratinjau (Jaminan foto pasti tampil!)
+                previewImg.src = base64ImageGlobal;
+                previewContainer.classList.remove('hidden');
+                
+                ocrStatus.textContent = "✅ Foto berhasil dimuat! Klik tombol 'Proses AI' di bawah untuk membaca data.";
+                
+                // Munculkan tombol proses AI jika belum ada
+                let prosesBtn = document.getElementById('prosesAiBtn');
+                if (!prosesBtn) {
+                    prosesBtn = document.createElement('button');
+                    prosesBtn.id = 'prosesAiBtn';
+                    prosesBtn.type = 'button';
+                    prosesBtn.className = 'mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded shadow';
+                    prosesBtn.textContent = '🚀 Proses Kartu Keluarga dengan AI Gemini';
+                    prosesBtn.onclick = jalankanProsesAI;
+                    previewContainer.appendChild(prosesBtn);
                 }
-
-                if (data.no_kk) {
-                    document.getElementById('no_kk').value = data.no_kk;
-                }
-
-                tableBody.innerHTML = '';
-                if (data.anggota && data.anggota.length > 0) {
-                    data.anggota.forEach(orang => {
-                        tambahBarisTabel({
-                            nik: orang.nik || '',
-                            nama: orang.nama || '',
-                            jk: orang.jk || 'L',
-                            tempat: orang.tempat_lahir || '',
-                            tgl: orang.tgl_lahir || '',
-                            agama: orang.agama || 'ISLAM',
-                            pend: orang.pendidikan || '',
-                            pek: orang.pekerjaan || '',
-                            status_nikah: orang.status_perkawinan || 'KAWIN',
-                            status_hub: orang.hubungan || 'ANAK',
-                            ayah: orang.ayah || '',
-                            ibu: orang.ibu || ''
-                        });
-                    });
-                } else {
-                    tambahBarisTabel();
-                }
-
-                alert("Berhasil! AI Vision telah membaca seluruh isi tabel Kartu Keluarga.");
-            })
-            .catch(err => {
-                ocrStatus.classList.add('hidden');
-                alert("Gagal terhubung ke server AI. Periksa koneksi internet Anda.");
-                console.error("Fetch Error:", err);
-                if (tableBody.rows.length === 0) tambahBarisTabel();
-            });
+            }
+            img.src = event.target.result;
         };
-
-        reader.onerror = function(error) {
-            console.error("FileReader Error: ", error);
-            alert("Gagal membaca file foto.");
-            ocrStatus.classList.add('hidden');
-        };
-
         reader.readAsDataURL(file);
     });
+
+    // 2. Fungsi terpisah untuk mengirim gambar ke AI Gemini setelah foto tampil sempurna
+    function jalankanProsesAI() {
+        if (!base64ImageGlobal) {
+            alert("Foto belum dimuat dengan benar.");
+            return;
+        }
+
+        ocrStatus.classList.remove('hidden');
+        ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "ocr_ai", image: base64ImageGlobal })
+        })
+        .then(res => res.json())
+        .then(data => {
+            ocrStatus.classList.add('hidden');
+            console.log("Respon dari AI:", data);
+
+            if (data.error) {
+                alert("Catatan AI: " + data.error);
+                return;
+            }
+
+            if (data.no_kk) {
+                document.getElementById('no_kk').value = data.no_kk;
+            }
+
+            tableBody.innerHTML = '';
+            if (data.anggota && data.anggota.length > 0) {
+                data.anggota.forEach(orang => {
+                    tambahBarisTabel({
+                        nik: orang.nik || '',
+                        nama: orang.nama || '',
+                        jk: orang.jk || 'L',
+                        tempat: orang.tempat_lahir || '',
+                        tgl: orang.tgl_lahir || '',
+                        agama: orang.agama || 'ISLAM',
+                        pend: orang.pendidikan || '',
+                        pek: orang.pekerjaan || '',
+                        status_nikah: orang.status_perkawinan || 'KAWIN',
+                        status_hub: orang.hubungan || 'ANAK',
+                        ayah: orang.ayah || '',
+                        ibu: orang.ibu || ''
+                    });
+                });
+            } else {
+                tambahBarisTabel();
+            }
+
+            alert("Berhasil! AI Vision telah membaca seluruh isi tabel Kartu Keluarga.");
+        })
+        .catch(err => {
+            ocrStatus.classList.add('hidden');
+            alert("Gagal terhubung ke server AI. Periksa koneksi internet Anda.");
+            console.error("Fetch Error:", err);
+        });
+    }
 </script>
 </body>
 </html>
