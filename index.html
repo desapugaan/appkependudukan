@@ -246,95 +246,92 @@
     // Penanganan File / Kamera yang Tangguh
     if (fotoKKInput) {
         fotoKKInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        const file = e.target.files[0];
+        if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1000;
-                    let scaleSize = MAX_WIDTH / img.width;
-                    if (scaleSize > 1) scaleSize = 1;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1000;
+                let scaleSize = MAX_WIDTH / img.width;
+                if (scaleSize > 1) scaleSize = 1;
 
-                    canvas.width = img.width * scaleSize;
-                    canvas.height = img.height * scaleSize;
+                canvas.width = img.width * scaleSize;
+                canvas.height = img.height * scaleSize;
 
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
-                    // 1. Tampilkan pratinjau gambar ke web secara pasti
-                    previewImg.src = compressedBase64;
-                    previewContainer.classList.remove('hidden');
-                    ocrStatus.classList.remove('hidden');
-                    ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
+                previewImg.src = compressedBase64;
+                previewContainer.classList.remove('hidden');
+                ocrStatus.classList.remove('hidden');
+                ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
 
-                    / Kirim ke Google Apps Script Backend
-                    fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: "ocr_ai", image: compressedBase64 })
-                    })
-                    .then(async res => {
-                        const textRes = await res.text();
-                        try {
-                            return JSON.parse(textRes);
-                        } catch (e) {
-                            throw new Error("Respon server bukan JSON: " + textRes);
-                        }
-                    })
-                    .then(data => {
-                        ocrStatus.classList.add('hidden');
-                        console.log("Hasil AI:", data);
+                fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "ocr_ai", image: compressedBase64 })
+                })
+                .then(async res => {
+                    const textRes = await res.text();
+                    try {
+                        return JSON.parse(textRes);
+                    } catch (e) {
+                        throw new Error("Respon server bukan JSON: " + textRes);
+                    }
+                })
+                .then(data => {
+                    ocrStatus.classList.add('hidden');
+                    console.log("Hasil AI:", data);
 
-                        if (data.error) {
-                            alert("Pesan dari server AI: " + (data.error || JSON.stringify(data.raw)));
-                            if (tableBody.rows.length === 0) tambahBarisTabel();
-                            return;
-                        }
-
-                        if (data.no_kk) {
-                            document.getElementById('no_kk').value = data.no_kk;
-                        }
-
-                        tableBody.innerHTML = '';
-                        if (data.anggota && data.anggota.length > 0) {
-                            data.anggota.forEach(orang => {
-                                tambahBarisTabel({
-                                    nik: orang.nik || '',
-                                    nama: orang.nama || '',
-                                    jk: orang.jk || 'L',
-                                    tempat: orang.tempat_lahir || '',
-                                    tgl: orang.tgl_lahir || '',
-                                    agama: orang.agama || 'ISLAM',
-                                    pend: orang.pendidikan || '',
-                                    pek: orang.pekerjaan || '',
-                                    status_nikah: orang.status_perkawinan || 'KAWIN',
-                                    status_hub: orang.hubungan || 'ANAK',
-                                    ayah: orang.ayah || '',
-                                    ibu: orang.ibu || ''
-                                });
-                            });
-                        } else {
-                            tambahBarisTabel();
-                        }
-
-                        alert("Berhasil! AI Vision telah membaca seluruh data Kartu Keluarga.");
-                    })
-                    .catch(err => {
-                        ocrStatus.classList.add('hidden');
-                        alert("Error Detail: " + err.message);
-                        console.error(err);
+                    if (data.error) {
+                        alert("Pesan dari server AI: " + (data.error || JSON.stringify(data.raw)));
                         if (tableBody.rows.length === 0) tambahBarisTabel();
-                    });
-                }
-                img.src = event.target.result;
-            }
-            reader.readAsDataURL(file);
-        });
-    }
+                        return;
+                    }
+
+                    if (data.no_kk) {
+                        document.getElementById('no_kk').value = data.no_kk;
+                    }
+
+                    tableBody.innerHTML = '';
+                    if (data.anggota && data.anggota.length > 0) {
+                        data.anggota.forEach(orang => {
+                            tambahBarisTabel({
+                                nik: orang.nik || '',
+                                nama: orang.nama || '',
+                                jk: orang.jk || 'L',
+                                tempat: orang.tempat_lahir || '',
+                                tgl: orang.tgl_lahir || '',
+                                agama: orang.agama || 'ISLAM',
+                                pend: orang.pendidikan || '',
+                                pek: orang.pekerjaan || '',
+                                status_nikah: orang.status_perkawinan || 'KAWIN',
+                                status_hub: orang.hubungan || 'ANAK',
+                                ayah: orang.ayah || '',
+                                ibu: orang.ibu || ''
+                            });
+                        });
+                    } else {
+                        tambahBarisTabel();
+                    }
+
+                    alert("Berhasil! AI Vision telah membaca seluruh data Kartu Keluarga.");
+                })
+                .catch(err => {
+                    ocrStatus.classList.add('hidden');
+                    alert("Error Detail: " + err.message);
+                    console.error(err);
+                    if (tableBody.rows.length === 0) tambahBarisTabel();
+                });
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
 </script>
 </body>
 </html>
