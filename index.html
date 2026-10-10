@@ -21,14 +21,14 @@
         <!-- Form Utama -->
         <form id="kkForm" class="space-y-6">
             
-            <!-- Bagian Tombol Kamera / Berkas KK -->
+            <!-- Tombol dan Input File dengan Atribut Kamera Langsung -->
 <div class="mb-4 text-center">
     <label for="fotoKK" class="cursor-pointer inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition">
         📷 Buka Kamera / Pilih Berkas KK
     </label>
-    <input type="file" id="fotoKK" accept="image/*" class="hidden">
+    <!-- Tambahkan capture="environment" agar langsung membuka kamera belakang HP -->
+    <input type="file" id="fotoKK" accept="image/*" capture="environment" class="hidden">
 </div>
-
 <!-- Container Pratinjau Foto (Pastikan id-nya sesuai) -->
 <div id="imagePreviewContainer" class="hidden mt-4 p-3 border-2 border-dashed border-emerald-500 rounded-xl bg-slate-50 text-center">
     <p class="text-sm font-medium text-emerald-800 mb-2">Pratinjau Foto KK:</p>
