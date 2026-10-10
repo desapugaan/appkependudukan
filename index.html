@@ -247,7 +247,12 @@
     };
 
     / Variabel URL Web App Google Apps Script Anda
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1t0e22mU7DwqDh2kiqwoOTSebhICV1n4Sn2wckvYAiZ-FaRtV2h5hsiKlqRmQ_M5Cw/exec";
+   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1t0e22mU7DwqDh2kiqwoOTSebhICV1n4Sn2wckvYAiZ-FaRtV2h5hsiKlqRmQ_M5Cw/exec";
+    const fotoKKInput = document.getElementById('fotoKK');
+    const previewImg = document.getElementById('previewImg');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const ocrStatus = document.getElementById('ocrStatus');
+    const tableBody = document.getElementById('tableBody');
 
     fotoKKInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -259,7 +264,7 @@
             previewImg.src = base64Image;
             previewContainer.classList.remove('hidden');
             ocrStatus.classList.remove('hidden');
-            ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh tabel Kartu Keluarga...";
+            ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
 
             fetch(WEB_APP_URL, {
                 method: 'POST',
@@ -300,7 +305,7 @@
             })
             .catch(err => {
                 ocrStatus.classList.add('hidden');
-                alert("Gagal terhubung ke AI Vision server.");
+                alert("Gagal terhubung ke AI Vision server. Periksa koneksi atau URL Web App.");
                 console.error(err);
                 tambahBarisTabel();
             });
