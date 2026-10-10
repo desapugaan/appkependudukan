@@ -246,43 +246,68 @@
         }
     };
 
-    // Fungsi Tampil & Scan Tanpa Paksaan Rotasi (Aman & Tidak Terbalik)
-    fotoKKInput.addEventListener('change', function(e) {
+    // Menggunakan TextDetector Bawaan Browser (Sangat Cepat & Akurat untuk Angka NIK/KK)
+    fotoKKInput.addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = function(e) {
-            // Langsung tampilkan foto sesuai aslinya tanpa diputar paksa
+        reader.onload = async function(e) {
             previewImg.src = e.target.result;
             previewContainer.classList.remove('hidden');
             ocrStatus.classList.remove('hidden');
+            ocrStatus.textContent = "⏳ Membaca teks dokumen dengan deteksi cerdas...";
 
             const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
+            img.src = e.target.result;
+            img.onload = async function() {
+                try {
+                    let fullText = "";
 
-                Tesseract.recognize(canvas, 'ind').then(({ data: { text } }) => {
+                    // Periksa apakah browser mendukung TextDetector native
+                    if ('TextDetector' in window) {
+                        const textDetector = new TextDetector();
+                        const results = await textDetector.detect(img);
+                        results.forEach(detected => {
+                            fullText += detected.rawValue + "\n";
+                        });
+                    } else {
+                        // Fallback ke Tesseract jika TextDetector tidak tersedia di browser
+                        const worker = await Tesseract.createWorker('ind');
+                        const ret = await worker.recognize(img);
+                        fullText = ret.data.text;
+                        await worker.terminate();
+                    }
+
                     ocrStatus.classList.add('hidden');
-                    console.log("Teks Terbaca:", text);
+                    console.log("Teks Terdeteksi:", fullText);
 
-                    const allNumbers16 = text.match(/\b\d{16}\b/g) || [];
+                    // Cari semua nomor 16 digit (No KK dan NIK)
+                    const allNumbers16 = fullText.match(/\b\d{16}\b/g) || [];
+
                     if (allNumbers16.length > 0) {
                         document.getElementById('no_kk').value = allNumbers16[0];
                     }
 
-                    alert("Foto berhasil dimuat! Silakan isi data pendudukan pada tabel dengan cepat dan mudah.");
-                }).catch(err => {
+                    tableBody.innerHTML = '';
+                    if (allNumbers16.length > 1) {
+                        for (let i = 1; i < allNumbers16.length; i++) {
+                            tambahBarisTabel({ nik: allNumbers16[i] });
+                        }
+                    }
+
+                    if (tableBody.rows.length === 0) {
+                        tambahBarisTabel();
+                    }
+
+                    alert(Berhasil memindai! Ditemukan ${allNumbers16.length} nomor identitas (No. KK & NIK). Silakan periksa kembali.);
+                } catch (err) {
                     ocrStatus.classList.add('hidden');
-                    alert("Pemindaian selesai.");
+                    alert("Gagal memproses teks otomatis. Silakan lengkapi secara manual.");
                     console.error(err);
-                });
+                    if (tableBody.rows.length === 0) tambahBarisTabel();
+                }
             }
-            img.src = e.target.result;
         }
         reader.readAsDataURL(file);
     });
