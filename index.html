@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Scan Kartu Keluarga Desa - Lengkap</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+</head>
+<body class="bg-slate-50 min-h-screen py-8 px-4">
+
+    <!-- Container dibuat lebar (max-w-7xl) agar muat untuk banyak kolom data KK -->
+    <div class="max-w-[95%] mx-auto bg-white shadow-lg rounded-2xl p-6 md:p-8">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Scan Kartu Keluarga (KK) Penuh & Lengkap</h1>
+            <p class="text-sm text-slate-500 mt-1">Seluruh atribut kependudukan tercakup, umur otomatis dihitung, silakan koreksi sebelum disimpan</p>
+        </div>
+
+        <!-- Form Utama -->
+        <form id="kkForm" class="space-y-6">
+            
+            <!-- Bagian Kamera / Upload Foto KK -->
+            <div class="border-2 border-dashed border-emerald-400 rounded-xl p-4 text-center bg-emerald-50/50">
+                <label class="block cursor-pointer">
+                    <span class="text-emerald-800 font-semibold block mb-1">📸 Ambil Foto Kartu Keluarga Secara Utuh</span>
+                    <span class="text-xs text-slate-500 block mb-2">Pastikan seluruh tabel anggota keluarga terlihat jelas</span>
+                    <input type="file" id="fotoKK" accept="image/*" capture="environment" class="hidden">
+                    <span class="inline-block bg-emerald-600 text-white text-sm font-medium py-2 px-4 rounded-lg shadow hover:bg-emerald-700 transition">
+                        Buka Kamera / Pilih Berkas KK
+                    </span>
+                </label>
+                
+                <div id="ocrStatus" class="mt-3 text-sm font-medium text-amber-600 hidden">
+                    ⏳ Sedang memindai seluruh data anggota keluarga dari KK... Mohon tunggu.
+                </div>
+
+                <div id="imagePreviewContainer" class="mt-4 hidden">
+                    <img id="previewImg" src="#" alt="Preview KK" class="max-h-40 mx-auto rounded-lg shadow-sm border">
+                </div>
+            </div>
+
+            <!-- Informasi Umum KK -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">No. Kartu Keluarga (KK)</label>
+                    <input type="text" id="no_kk" class="w-full px-3 py-2 border rounded-lg bg-white" placeholder="16 digit No KK" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nomor RT (Berlaku untuk seluruh anggota)</label>
+                    <select id="rt_umum" class="w-full px-3 py-2 border rounded-lg bg-white" required>
+                        <option value="">Pilih RT</option>
+                        <option value="RT 01">RT 01</option>
+                        <option value="RT 02">RT 02</option>
+                        <option value="RT 03">RT 03</option>
+                        <option value="RT 04">RT 04</option>
+                        <option value="RT 05">RT 05</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabel Daftar Anggota Keluarga (Lengkap dengan Umur, Jenis Kelamin, Agama, Pendidikan, Status) -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-semibold text-slate-800">Daftar Anggota Keluarga (Koreksi & Lengkapi Data)</h2>
+                    <button type="button" id="addRowBtn" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition">
+                        + Tambah Baris Manual
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">Kolom umur akan terhitung otomatis saat Tanggal Lahir diisi. Periksa dan koreksi data sebelum disimpan.</p>
+                
+                <div class="overflow-x-auto border rounded-xl">
+                    <table class="w-full text-left border-collapse" id="anggotaTable">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-[11px] uppercase tracking-wider whitespace-nowrap">
+                                <th class="p-2 border">NIK</th>
+                                <th class="p-2 border">Nama Lengkap</th>
+                                <th class="p-2 border">JK</th>
+                                <th class="p-2 border">Tempat Lahir</th>
+                                <th class="p-2 border">Tgl Lahir</th>
+                                <th class="p-2 border">Umur</th>
+                                <th class="p-2 border">Agama</th>
+                                <th class="p-2 border">Pendidikan</th>
+                                <th class="p-2 border">Pekerjaan</th>
+                                <th class="p-2 border">Status Perkawinan</th>
+                                <th class="p-2 border">Hubungan KK</th>
+                                <th class="p-2 border">Nama Ayah</th>
+                                <th class="p-2 border">Nama Ibu</th>
+                                <th class="p-2 border text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="text-xs">
+                            <!-- Baris awal standar -->
+                            <tr>
+                                <td class="p-1.5 border"><input type="text" class="w-28 px-1.5 py-1 border rounded nik-val" placeholder="16 digit NIK"></td>
+                                <td class="p-1.5 border"><input type="text" class="w-32 px-1.5 py-1 border rounded nama-val" placeholder="Nama Lengkap"></td>
+                                <td class="p-1.5 border">
+                                    <select class="px-1 py-1 border rounded jk-val">
+                                        <option value="L">L</option>
+                                        <option value="P">P</option>
+                                    </select>
+                                </td>
+                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded tempat-val" placeholder="Tempat"></td>
+                                <td class="p-1.5 border"><input type="date" class="px-1 py-1 border rounded tgl-val on-change-tgl"></td>
+                                <td class="p-1.5 border"><input type="text" class="w-16 px-1.5 py-1 border rounded bg-slate-100 font-semibold umur-val" placeholder="Otomatis" readonly></td>
+                                <td class="p-1.5 border">
+                                    <select class="px-1 py-1 border rounded agama-val">
+                                        <option value="ISLAM">ISLAM</option>
+                                        <option value="KRISTEN">KRISTEN</option>
+                                        <option value="KATOLIK">KATOLIK</option>
+                                        <option value="HINDU">HINDU</option>
+                                        <option value="BUDHA">BUDHA</option>
+                                        <option value="KONGHUCU">KONGHUCU</option>
+                                    </select>
+                                </td>
+                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pend-val" placeholder="Pendidikan"></td>
+                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pek-val" placeholder="Pekerjaan"></td>
+                                <td class="p-1.5 border">
+                                    <select class="px-1 py-1 border rounded status-nikah-val">
+                                        <option value="KAWIN">KAWIN</option>
+                                        <option value="BELUM KAWIN">BELUM KAWIN</option>
+                                        <option value="CERAI HIDUP">CERAI HIDUP</option>
+                                        <option value="CERAI MATI">CERAI MATI</option>
+                                    </select>
+                                </td>
+                                <td class="p-1.5 border">
+                                    <select class="px-1 py-1 border rounded status-hub-val">
+                                        <option value="KEPALA KELUARGA">KEPALA KELUARGA</option>
+                                        <option value="ISTRI">ISTRI</option>
+                                        <option value="ANAK">ANAK</option>
+                                        <option value="MENANTU">MENANTU</option>
+                                        <option, value="CUCU">CUCU</option>
+                                        <option value="ORANG TUA">ORANG TUA</option>
+                                        <option value="LAINNYA">LAINNYA</option>
+                                    </select>
+                                </td>
+                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ayah-val" placeholder="Ayah"></td>
+                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ibu-val" placeholder="Ibu"></td>
+                                <td class="p-1.5 border text-center"><button type="button" class="text-rose-600 hover:text-rose-800 font-bold px-2 py-1" onclick="hapusBaris(this)">Hapus</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tombol Kirim Semua -->
+            <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md">
+                Simpan Seluruh Anggota Keluarga ke Google Sheets
+            </button>
+        </form>
+
+        <div id="statusMessage" class="mt-4 text-center text-sm font-medium hidden"></div>
+    </div>
+
+    <!-- JavaScript Logika Lengkap -->
+    <script>
+        const fotoKKInput = document.getElementById('fotoKK');
+        const previewImg = document.getElementById('previewImg');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const ocrStatus = document.getElementById('ocrStatus');
+        const tableBody = document.getElementById('tableBody');
+
+        // Fungsi Hitung Umur
+        function hitungUmur(tglLahirString) {
+            if (!tglLahirString) return "";
+            const dob = new Date(tglLahirString);
+            const today = new Date();
+            if (isNaN(dob)) return "";
+            let age = today.getFullYear() - dob.getFullYear();
+            let m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            return age >= 0 ? age + " Thn" : "0 Thn";
+        }
+
+        // Event listener delegasi untuk update umur otomatis saat tanggal lahir diubah
+        tableBody.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('tgl-val')) {
+                const row = e.target.closest('tr');
+                const umurInput = row.querySelector('.umur-val');
+                umurInput.value = hitungUmur(e.target.value);
+            }
+        });
+
+        // Tambah baris manual dengan seluruh kolom
+        document.getElementById('addRowBtn').addEventListener('click', function() {
+            tambahBarisTabel();
+        });
+
+        function tambahBarisTabel(data = {}) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="p-1.5 border"><input type="text" class="w-28 px-1.5 py-1 border rounded nik-val" value="${data.nik || ''}" placeholder="16 digit NIK"></td>
+                <td class="p-1.5 border"><input type="text" class="w-32 px-1.5 py-1 border rounded nama-val" value="${data.nama || ''}" placeholder="Nama Lengkap"></td>
+                <td class="p-1.5 border">
+                    <select class="px-1 py-1 border rounded jk-val">
+                        <option value="L" ${data.jk === 'L' ? 'selected' : ''}>L</option>
+                        <option value="P" ${data.jk === 'P' ? 'selected' : ''}>P</option>
+                    </select>
+                </td>
+                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded tempat-val" value="${data.tempat || ''}" placeholder="Tempat"></td>
+                <td class="p-1.5 border"><input type="date" class="px-1 py-1 border rounded tgl-val" value="${data.tgl || ''}"></td>
+                <td class="p-1.5 border"><input type="text" class="w-16 px-1.5 py-1 border rounded bg-slate-100 font-semibold umur-val" value="${data.tgl ? hitungUmur(data.tgl) : ''}" placeholder="Otomatis" readonly></td>
+                <td class="p-1.5 border">
+                    <select class="px-1 py-1 border rounded agama-val">
+                        <option value="ISLAM">ISLAM</option>
+                        <option value="KRISTEN">KRISTEN</option>
+                        <option value="KATOLIK">KATOLIK</option>
+                        <option value="HINDU">HINDU</option>
+                        <option value="BUDHA">BUDHA</option>
+                        <option value="KONGHUCU">KONGHUCU</option>
+                    </select>
+                </td>
+                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pend-val" value="${data.pend || ''}" placeholder="Pendidikan"></td>
+                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pek-val" value="${data.pek || ''}" placeholder="Pekerjaan"></td>
+                <td class="p-1.5 border">
+                    <select class="px-1 py-1 border rounded status-nikah-val">
+                        <option value="KAWIN">KAWIN</option>
+                        <option value="BELUM KAWIN">BELUM KAWIN</option>
+                        <option value="CERAI HIDUP">CERAI HIDUP</option>
+                        <option value="CERAI MATI">CERAI MATI</option>
+                    </select>
+                </td>
+                <td class="p-1.5 border">
+                    <select class="px-1 py-1 border rounded status-hub-val">
+                        <option value="KEPALA KELUARGA">KEPALA KELUARGA</option>
+                        <option value="ISTRI">ISTRI</option>
+                        <option value="ANAK">ANAK</option>
+                        <option value="MENANTU">MENANTU</option>
+                        <option value="CUCU">CUCU</option>
+                        <option value="ORANG TUA">ORANG TUA</option>
+                        <option value="LAINNYA">LAINNYA</option>
+                    </select>
+                </td>
+                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ayah-val" value="${data.ayah || ''}" placeholder="Ayah"></td>
+                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ibu-val" value="${data.ibu || ''}" placeholder="Ibu"></td>
+                <td class="p-1.5 border text-center"><button type="button" class="text-rose-600 hover:text-rose-800 font-bold px-2 py-1" onclick="hapusBaris(this)">Hapus</button></td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        window.hapusBaris = function(btn) {
+            const row = btn.closest('tr');
+            if (tableBody.rows.length > 1) {
+                row.remove();
+            } else {
+                alert("Minimal harus ada satu baris data.");
+            }
+        };
+
+        // Proses Scan Foto KK
+        fotoKKInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+
+            ocrStatus.classList.remove('hidden');
+
+            Tesseract.recognize(file, 'ind').then(({ data: { text } }) => {
+                ocrStatus.classList.add('hidden');
+
+                const noKkMatch = text.match(/\b\d{16}\b/);
+                if (noKkMatch) {
+                    document.getElementById('no_kk').value = noKkMatch[0];
+                }
+
+                const allNik = text.match(/\b\d{16}\b/g) || [];
+                tableBody.innerHTML = '';
+                
+                if (allNik.length > 1) {
+                    allNik.forEach((nikVal, index) => {
+                        if (index === 0 && noKkMatch && nikVal === noKkMatch[0]) return;
+                        tambahBarisTabel({ nik: nikVal });
+                    });
+                } 
+                
+                if (tableBody.rows.length === 0) {
+                    tambahBarisTabel();
+                }
+
+                alert("Pemindaian selesai! Silakan lengkapi atau koreksi kolom Umur, Jenis Kelamin, Agama, Pendidikan, Status Perkawinan, dan Status Hubungan.");
+            }).catch(err => {
+                ocrStatus.classList.add('hidden');
+                alert("Gagal memindai gambar. Silakan isi data secara manual.");
+                console.error(err);
+            });
+        });
+
+        // Kirim Semua Data ke Google Apps Script
+        const kkForm = document.getElementById('kkForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const GOOGLE_SCRIPT_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA_DI_SINI";
+
+        kkForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Menyimpan Seluruh Anggota Keluarga...";
+
+            const noKk = document.getElementById('no_kk').value;
+            const rtUmum = document.getElementById('rt_umum').value;
+            
+            const rows = tableBody.querySelectorAll('tr');
+            let anggotaList = [];
+
+            rows.forEach(row => {
+                anggotaList.push({
+                    no_kk: noKk,
+                    nik: row.querySelector('.nik-val').value,
+                    nama: row.querySelector('.nama-val').value,
+                    jk: row.querySelector('.jk-val').value,
+                    tempat_lahir: row.querySelector('.tempat-val').value,
+                    tgl_lahir: row.querySelector('.tgl-val').value,
+                    umur: row.querySelector('.umur-val').value,
+                    agama: row.querySelector('.agama-val').value,
+                    pendidikan: row.querySelector('.pend-val').value,
+                    pekerjaan: row.querySelector('.pek-val').value,
+                    status_perkawinan: row.querySelector('.status-nikah-val').value,
+                    status_hubungan: row.querySelector('.status-hub-val').value,
+                    ayah: row.querySelector('.ayah-val').value,
+                    ibu: row.querySelector('.ibu-val').value,
+                    rt: rtUmum
+                });
+            });
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ anggota: anggotaList })
+            })
+            .then(() => {
+                statusMessage.textContent = "✅ Seluruh data kependudukan lengkap berhasil disimpan dan diurutkan otomatis berdasarkan RT!";
+                statusMessage.className = "mt-4 text-center text-sm font-medium text-emerald-600";
+                statusMessage.classList.remove('hidden');
+                kkForm.reset();
+                tableBody.innerHTML = '';
+                tambahBarisTabel();
+                previewContainer.classList.add('hidden');
+            })
+            .catch(error => {
+                statusMessage.textContent = "❌ Terjadi kesalahan: " + error;
+                statusMessage.className = "mt-4 text-center text-sm font-medium text-rose-600";
+                statusMessage.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Simpan Seluruh Anggota Keluarga ke Google Sheets";
+            });
+        });
+    </script>
+</body>
+</html>
