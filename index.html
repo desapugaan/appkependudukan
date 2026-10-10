@@ -247,9 +247,8 @@
     };
 
     / Variabel URL Web App Google Apps Script Anda
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1t0e22mU7DwqDh2wKiqwoOTSebhlCV1n4Sn2wCkvYAiZ-FaRTv2h5hsiKlqrMq_M5Cw/exec"; 
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1t0e22mU7DwqDh2wKiqwoOTSebhlCV1n4Sn2wCkvYAiZ-FaRTv2h5hsiKlqrMq_M5Cw/exec"; // Masukkan URL Web App Apps Script Anda di sini
 
-    // Fungsi Kirim Foto ke AI Vision Server-Side (Gemini via Apps Script)
     fotoKKInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -260,7 +259,7 @@
             previewImg.src = base64Image;
             previewContainer.classList.remove('hidden');
             ocrStatus.classList.remove('hidden');
-            ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
+            ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh tabel Kartu Keluarga...";
 
             fetch(WEB_APP_URL, {
                 method: 'POST',
@@ -297,11 +296,11 @@
                     tambahBarisTabel();
                 }
 
-                alert("Berhasil! AI Vision telah membaca seluruh detail Kartu Keluarga dan mengisi tabel.");
+                alert("Berhasil! AI Vision telah membaca seluruh isi tabel Kartu Keluarga.");
             })
             .catch(err => {
                 ocrStatus.classList.add('hidden');
-                alert("Gagal terhubung ke AI Vision backend.");
+                alert("Gagal terhubung ke AI Vision server.");
                 console.error(err);
                 tambahBarisTabel();
             });
