@@ -21,23 +21,19 @@
         <!-- Form Utama -->
         <form id="kkForm" class="space-y-6">
             
-            <!-- Bagian Kamera / Upload Foto KK -->
-<div class="border-2 border-dashed border-emerald-400 rounded-xl p-4 text-center bg-emerald-50/50">
-    <label class="block cursor-pointer">
-        <span class="text-emerald-800 font-semibold block mb-1">📷 Ambil Foto Kartu Keluarga Secara Utuh</span>
-        <span class="text-xs text-slate-500 block mb-2">Pastikan seluruh tabel anggota keluarga terlihat jelas</span>
-        <input type="file" id="fotoKK" accept="image/*" capture="environment" class="hidden">
-        <span class="inline-block bg-emerald-600 text-white text-sm font-medium py-2 px-4 rounded-lg shadow hover:bg-emerald-700 transition">
-            Buka Kamera / Pilih Berkas KK
-        </span>
+            <!-- Bagian Tombol Kamera / Berkas KK -->
+<div class="mb-4 text-center">
+    <label for="fotoKK" class="cursor-pointer inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition">
+        📷 Buka Kamera / Pilih Berkas KK
     </label>
+    <input type="file" id="fotoKK" accept="image/*" class="hidden">
+</div>
 
-    <!-- Kotak Pratinjau Gambar (Wajib Ada ID ini) -->
-    <div id="imagePreviewContainer" class="mt-4 hidden">
-        <p class="text-xs text-slate-500 mb-1">Pratinjau Foto KK:</p>
-        <img id="previewImg" class="max-h-48 mx-auto rounded border shadow-sm" alt="Preview KK">
-        <p id="ocrStatus" class="text-xs text-emerald-600 font-medium mt-2 hidden">⏳ Sedang memindai teks dokumen, mohon tunggu...</p>
-    </div>
+<!-- Container Pratinjau Foto (Pastikan id-nya sesuai) -->
+<div id="imagePreviewContainer" class="hidden mt-4 p-3 border-2 border-dashed border-emerald-500 rounded-xl bg-slate-50 text-center">
+    <p class="text-sm font-medium text-emerald-800 mb-2">Pratinjau Foto KK:</p>
+    <img id="previewImg" class="max-h-64 mx-auto rounded shadow object-contain mb-3" alt="Pratinjau KK">
+    <div id="ocrStatus" class="text-xs text-blue-600 font-semibold mb-2"></div>
 </div>
 
             <!-- Informasi Umum KK -->
@@ -154,6 +150,7 @@
 
     <!-- JavaScript Logika Lengkap dengan Penanganan Landscape -->
  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1t0e22mU7DwqDh2kiqwoOTSebhICV1n4Sn2wckvYAiZ-FaRtV2h5hsiKlqRmQ_M5Cw/exec";
     const fotoKKInput = document.getElementById('fotoKK');
     const previewImg = document.getElementById('previewImg');
     const previewContainer = document.getElementById('imagePreviewContainer');
@@ -201,33 +198,33 @@
             <td class="p-1.5 border"><input type="text" class="w-16 px-1.5 py-1 border rounded bg-slate-100 font-semibold umur-val" value="${data.tgl ? hitungUmur(data.tgl) : ''}" placeholder="Otomatis" readonly></td>
             <td class="p-1.5 border">
                 <select class="px-1 py-1 border rounded agama-val">
-                    <option value="ISLAM">ISLAM</option>
-                    <option value="KRISTEN">KRISTEN</option>
-                    <option value="KATOLIK">KATOLIK</option>
-                    <option value="HINDU">HINDU</option>
-                    <option value="BUDHA">BUDHA</option>
-                    <option value="KONGHUCU">KONGHUCU</option>
+                    <option value="ISLAM" ${data.agama === 'ISLAM' ? 'selected' : ''}>ISLAM</option>
+                    <option value="KRISTEN" ${data.agama === 'KRISTEN' ? 'selected' : ''}>KRISTEN</option>
+                    <option value="KATOLIK" ${data.agama === 'KATOLIK' ? 'selected' : ''}>KATOLIK</option>
+                    <option value="HINDU" ${data.agama === 'HINDU' ? 'selected' : ''}>HINDU</option>
+                    <option value="BUDHA" ${data.agama === 'BUDHA' ? 'selected' : ''}>BUDHA</option>
+                    <option value="KONGHUCU" ${data.agama === 'KONGHUCU' ? 'selected' : ''}>KONGHUCU</option>
                 </select>
             </td>
             <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pend-val" value="${data.pend || ''}" placeholder="Pendidikan"></td>
             <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pek-val" value="${data.pek || ''}" placeholder="Pekerjaan"></td>
             <td class="p-1.5 border">
                 <select class="px-1 py-1 border rounded status-nikah-val">
-                    <option value="KAWIN">KAWIN</option>
-                    <option value="BELUM KAWIN">BELUM KAWIN</option>
-                    <option value="CERAI HIDUP">CERAI HIDUP</option>
-                    <option value="CERAI MATI">CERAI MATI</option>
+                    <option value="KAWIN" ${data.status_nikah === 'KAWIN' ? 'selected' : ''}>KAWIN</option>
+                    <option value="BELUM KAWIN" ${data.status_nikah === 'BELUM KAWIN' ? 'selected' : ''}>BELUM KAWIN</option>
+                    <option value="CERAI HIDUP" ${data.status_nikah === 'CERAI HIDUP' ? 'selected' : ''}>CERAI HIDUP</option>
+                    <option value="CERAI MATI" ${data.status_nikah === 'CERAI MATI' ? 'selected' : ''}>CERAI MATI</option>
                 </select>
             </td>
             <td class="p-1.5 border">
                 <select class="px-1 py-1 border rounded status-hub-val">
-                    <option value="KEPALA KELUARGA">KEPALA KELUARGA</option>
-                    <option value="ISTRI">ISTRI</option>
-                    <option value="ANAK">ANAK</option>
-                    <option value="MENANTU">MENANTU</option>
-                    <option value="CUCU">CUCU</option>
-                    <option value="ORANG TUA">ORANG TUA</option>
-                    <option value="LAINNYA">LAINNYA</option>
+                    <option value="KEPALA KELUARGA" ${data.status_hub === 'KEPALA KELUARGA' ? 'selected' : ''}>KEPALA KELUARGA</option>
+                    <option value="ISTRI" ${data.status_hub === 'ISTRI' ? 'selected' : ''}>ISTRI</option>
+                    <option value="ANAK" ${data.status_hub === 'ANAK' ? 'selected' : ''}>ANAK</option>
+                    <option value="MENANTU" ${data.status_hub === 'MENANTU' ? 'selected' : ''}>MENANTU</option>
+                    <option value="CUCU" ${data.status_hub === 'CUCU' ? 'selected' : ''}>CUCU</option>
+                    <option value="ORANG TUA" ${data.status_hub === 'ORANG TUA' ? 'selected' : ''}>ORANG TUA</option>
+                    <option value="LAINNYA" ${data.status_hub === 'LAINNYA' ? 'selected' : ''}>LAINNYA</option>
                 </select>
             </td>
             <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ayah-val" value="${data.ayah || ''}" placeholder="Ayah"></td>
@@ -246,122 +243,89 @@
         }
     };
 
-    / Variabel URL Web App Google Apps Script Anda
-   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1t0e22mU7DwqDh2kiqwoOTSebhICV1n4Sn2wckvYAiZ-FaRtV2h5hsiKlqRmQ_M5Cw/exec";
-    const fotoKKInput = document.getElementById('fotoKK');
-    const previewImg = document.getElementById('previewImg');
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    const ocrStatus = document.getElementById('ocrStatus');
-    const tableBody = document.getElementById('tableBody');
+    // Penanganan File / Kamera yang Tangguh
+    if (fotoKKInput) {
+        fotoKKInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-    let base64ImageGlobal = "";
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1000;
+                    let scaleSize = MAX_WIDTH / img.width;
+                    if (scaleSize > 1) scaleSize = 1;
 
-    // 1. Tangkap foto/berkas dan pastikan tampil di pratinjau web dulu
-    fotoKKInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+                    canvas.width = img.width * scaleSize;
+                    canvas.height = img.height * scaleSize;
 
-        ocrStatus.classList.remove('hidden');
-        ocrStatus.textContent = "⏳ Memuat foto ke layar web...";
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                // Kompres gambar agar ukurannya ringan dan aman untuk browser & server
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 1000;
-                let scaleSize = MAX_WIDTH / img.width;
-                if (scaleSize > 1) scaleSize = 1;
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
-                canvas.width = img.width * scaleSize;
-                canvas.height = img.height * scaleSize;
+                    // 1. Tampilkan pratinjau gambar ke web secara pasti
+                    previewImg.src = compressedBase64;
+                    previewContainer.classList.remove('hidden');
+                    ocrStatus.classList.remove('hidden');
+                    ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
 
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    // 2. Kirim ke Google Apps Script Backend
+                    fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "ocr_ai", image: compressedBase64 })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        ocrStatus.classList.add('hidden');
+                        console.log("Hasil AI:", data);
 
-                // Simpan hasil kompresi ke variabel global
-                base64ImageGlobal = canvas.toDataURL('image/jpeg', 0.75);
+                        if (data.error) {
+                            alert("Pesan dari server AI: " + data.error);
+                            if (tableBody.rows.length === 0) tambahBarisTabel();
+                            return;
+                        }
 
-                // Tampilkan ke pratinjau (Jaminan foto pasti tampil!)
-                previewImg.src = base64ImageGlobal;
-                previewContainer.classList.remove('hidden');
-                
-                ocrStatus.textContent = "✅ Foto berhasil dimuat! Klik tombol 'Proses AI' di bawah untuk membaca data.";
-                
-                // Munculkan tombol proses AI jika belum ada
-                let prosesBtn = document.getElementById('prosesAiBtn');
-                if (!prosesBtn) {
-                    prosesBtn = document.createElement('button');
-                    prosesBtn.id = 'prosesAiBtn';
-                    prosesBtn.type = 'button';
-                    prosesBtn.className = 'mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded shadow';
-                    prosesBtn.textContent = '🚀 Proses Kartu Keluarga dengan AI Gemini';
-                    prosesBtn.onclick = jalankanProsesAI;
-                    previewContainer.appendChild(prosesBtn);
-                }
-            }
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
+                        if (data.no_kk) {
+                            document.getElementById('no_kk').value = data.no_kk;
+                        }
 
-    // 2. Fungsi terpisah untuk mengirim gambar ke AI Gemini setelah foto tampil sempurna
-    function jalankanProsesAI() {
-        if (!base64ImageGlobal) {
-            alert("Foto belum dimuat dengan benar.");
-            return;
-        }
+                        tableBody.innerHTML = '';
+                        if (data.anggota && data.anggota.length > 0) {
+                            data.anggota.forEach(orang => {
+                                tambahBarisTabel({
+                                    nik: orang.nik || '',
+                                    nama: orang.nama || '',
+                                    jk: orang.jk || 'L',
+                                    tempat: orang.tempat_lahir || '',
+                                    tgl: orang.tgl_lahir || '',
+                                    agama: orang.agama || 'ISLAM',
+                                    pend: orang.pendidikan || '',
+                                    pek: orang.pekerjaan || '',
+                                    status_nikah: orang.status_perkawinan || 'KAWIN',
+                                    status_hub: orang.hubungan || 'ANAK',
+                                    ayah: orang.ayah || '',
+                    ibu: orang.ibu || ''
+                                });
+                            });
+                        } else {
+                            tambahBarisTabel();
+                        }
 
-        ocrStatus.classList.remove('hidden');
-        ocrStatus.textContent = "🤖 AI Gemini sedang membaca seluruh isi tabel Kartu Keluarga...";
-
-        fetch(WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "ocr_ai", image: base64ImageGlobal })
-        })
-        .then(res => res.json())
-        .then(data => {
-            ocrStatus.classList.add('hidden');
-            console.log("Respon dari AI:", data);
-
-            if (data.error) {
-                alert("Catatan AI: " + data.error);
-                return;
-            }
-
-            if (data.no_kk) {
-                document.getElementById('no_kk').value = data.no_kk;
-            }
-
-            tableBody.innerHTML = '';
-            if (data.anggota && data.anggota.length > 0) {
-                data.anggota.forEach(orang => {
-                    tambahBarisTabel({
-                        nik: orang.nik || '',
-                        nama: orang.nama || '',
-                        jk: orang.jk || 'L',
-                        tempat: orang.tempat_lahir || '',
-                        tgl: orang.tgl_lahir || '',
-                        agama: orang.agama || 'ISLAM',
-                        pend: orang.pendidikan || '',
-                        pek: orang.pekerjaan || '',
-                        status_nikah: orang.status_perkawinan || 'KAWIN',
-                        status_hub: orang.hubungan || 'ANAK',
-                        ayah: orang.ayah || '',
-                        ibu: orang.ibu || ''
+                        alert("Berhasil! AI Vision telah membaca seluruh data Kartu Keluarga.");
+                    })
+                    .catch(err => {
+                        ocrStatus.classList.add('hidden');
+                        alert("Gagal terhubung ke server AI Vision.");
+                        console.error(err);
+                        if (tableBody.rows.length === 0) tambahBarisTabel();
                     });
-                });
-            } else {
-                tambahBarisTabel();
+                }
+                img.src = event.target.result;
             }
-
-            alert("Berhasil! AI Vision telah membaca seluruh isi tabel Kartu Keluarga.");
-        })
-        .catch(err => {
-            ocrStatus.classList.add('hidden');
-            alert("Gagal terhubung ke server AI. Periksa koneksi internet Anda.");
-            console.error("Fetch Error:", err);
+            reader.readAsDataURL(file);
         });
     }
 </script>
