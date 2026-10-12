@@ -1,352 +1,734 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Scan Kartu Keluarga Desa - Vision AI</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Digitalisasi KK V2.2 | Claymorphism • GitHub Pages + Apps Script</title>
+  <style>
+    :root {
+      --bg: #f3f2ff;
+      --surface: #fbfaff;
+      --ink: #29324d;
+      --muted: #77809a;
+      --violet: #7563d9;
+      --violet-deep: #5748ad;
+      --violet-wash: #ebe5ff;
+      --mint: #d9f6e9;
+      --pink: #ffe3e5;
+      --peach: #ffecd8;
+      --line: #e5e2f4;
+      --shadow: 12px 12px 30px #cfd0e9a8, -10px -10px 26px #ffffffde;
+      --shadow-soft: 7px 8px 17px #d8d8edaa, -7px -7px 16px #ffffffdd;
+      --inset: inset 5px 5px 10px #dcdbefb8, inset -5px -5px 12px #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html {scroll-behavior: smooth;}
+    body {margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden;}
+    body::before {content:"";position:fixed;z-index:-1;inset:0;background:radial-gradient(circle at 4% 17%,#dce9ff 0,transparent 28%),radial-gradient(circle at 96% 4%,#ffe7e9 0,transparent 25%),radial-gradient(circle at 83% 78%,#e2f9ed 0,transparent 35%);pointer-events:none;}
+    button, input, select {font:inherit;}
+    button {cursor:pointer;}
+    button:disabled {cursor:wait;opacity:.55;transform:none!important;}
+    input, select {width:100%;min-height:48px;border:1px solid #e4e0f0;border-radius:15px;padding:11px 14px;background:#f7f5ff;color:var(--ink);box-shadow:var(--inset);transition:border-color .2s,box-shadow .2s;}
+    input:focus,select:focus {outline:0;border-color:#9d8bef;box-shadow:var(--inset),0 0 0 4px #9c8be73d;}
+    button:focus-visible,summary:focus-visible {outline:3px solid #a392ec;outline-offset:3px;}
+    label {display:block;margin-bottom:7px;font-size:13px;font-weight:740;color:#4f5576;}
+    [hidden] {display:none!important;}
+    h1,h2,h3,p {margin-top:0;}
+    h1 {font-size:clamp(31px,4vw,49px);line-height:1.13;letter-spacing:-1.8px;margin:15px 0 14px;font-weight:850;}
+    h2 {font-size:clamp(19px,2vw,24px);line-height:1.27;letter-spacing:-.7px;margin:0 0 6px;}
+    h3 {font-size:17px;line-height:1.4;margin:0 0 7px;}
+    p {margin-bottom:0;}
+    .page {max-width:1260px;padding:20px 23px 46px;margin:auto;}
+    .topbar {display:flex;justify-content:space-between;align-items:center;gap:22px;padding:8px 6px 25px;}
+    .brand {display:flex;align-items:center;gap:13px;}
+    .logo {display:grid;place-items:center;width:53px;height:53px;flex:none;border-radius:18px;background:linear-gradient(145deg,#a295ff,#6f6bd7);color:white;box-shadow:7px 7px 13px #c8c3e4,-6px -6px 16px #fff,inset 2px 2px 4px #ffffff80;font-size:24px;font-weight:850;transform:rotate(-5deg);}
+    .brand-label {font-size:16px;font-weight:840;letter-spacing:-.4px;line-height:1.16;}
+    .brand-sub {font-size:11px;font-weight:800;color:#8a89a5;letter-spacing:1.1px;text-transform:uppercase;margin-top:6px;}
+    .header-right {display:flex;align-items:center;justify-content:flex-end;gap:11px;flex-wrap:wrap;}
+    .pill {font-size:12px;font-weight:800;padding:10px 15px;border:1px solid #ffffffdd;border-radius:100px;background:#f8f7ff;box-shadow:var(--shadow-soft);color:#8b829f;white-space:nowrap;}
+    .pill.ok {background:#e3f8ec;color:#2d805c;}
+    .pill.off {background:#ffeff1;color:#a46a7b;}
+    .btn {display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:47px;padding:11px 20px;border-radius:16px;border:1px solid #ffffffb3;font-size:14px;font-weight:800;line-height:1.2;box-shadow:6px 7px 14px #d0cde4a6,-5px -5px 12px #fff, inset 2px 2px 3px #ffffff70;transition:transform .15s,box-shadow .15s,filter .15s;}
+    .btn:hover:not(:disabled) {transform:translateY(-2px);filter:brightness(1.018);box-shadow:8px 10px 20px #c8c4e2,-6px -6px 14px #fff;}
+    .btn:active:not(:disabled) {transform:translateY(1px);box-shadow:var(--inset);}
+    .btn-primary {background:linear-gradient(145deg,#8e7ef2,#6456ce);color:#fff;text-shadow:0 1px 1px #5144af80;border-color:#a89afc;box-shadow:7px 8px 15px #beb7e9,-4px -4px 10px #fff,inset 2px 2px 5px #cfc8ff69;}
+    .btn-primary:hover:not(:disabled) {background:linear-gradient(145deg,#9b8afa,#6956d7);box-shadow:9px 11px 20px #bbb3e5,-5px -5px 15px #fff;}
+    .btn-plain {background:linear-gradient(145deg,#ffffff,#f3f0ff);color:#6157aa;}
+    .btn-light {background:#f8f7ff;color:#6155b0;}
+    .btn-danger {background:linear-gradient(145deg,#fff3f4,#ffe1e7);color:#a45470;}
+    .btn-small {min-height:36px;padding:7px 13px;border-radius:13px;font-size:12px;}
+    .hero {position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);align-items:center;min-height:296px;gap:14px;padding:34px 43px;overflow:hidden;background:linear-gradient(118deg,#efebff 5%,#e8e9ff 54%,#daf5ec 100%);border:2px solid #ffffffb8;border-radius:34px;box-shadow:var(--shadow);}
+    .hero::before {content:"";position:absolute;width:240px;height:240px;border-radius:50%;background:#fff9;filter:blur(2px);top:-148px;right:20%;}
+    .hero::after {content:"";position:absolute;width:155px;height:155px;border-radius:50%;background:#f8cde480;bottom:-104px;left:43%;}
+    .hero-copy {position:relative;z-index:2;}
+    .eyebrow {display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#ffffffb8;color:#7264b6;border:1px solid #fff;font-weight:850;letter-spacing:.35px;font-size:11px;box-shadow:4px 5px 10px #d4d1e99c;}
+    .eyebrow-dot {width:9px;height:9px;border-radius:50%;background:#81d1a8;box-shadow:0 0 0 4px #baf0d4;}
+    .hero h1 span {color:#7865db;}
+    .hero-copy>p {max-width:500px;color:#6c7493;font-size:14px;line-height:1.8;}
+    .hero-chips {display:flex;flex-wrap:wrap;gap:9px;margin-top:19px;}
+    .chip {display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:15px;background:#ffffffcf;font-size:12px;font-weight:760;color:#626784;border:1px solid #fff;box-shadow:4px 5px 12px #d2d0e5a1;}
+    .hero-visual {height:230px;position:relative;z-index:1;display:grid;place-items:center;}
+    .hero-orb {position:absolute;width:223px;height:223px;right:18%;top:-3px;background:linear-gradient(145deg,#f9dcf0,#c5d4ff);border-radius:47% 53% 43% 57%;box-shadow:13px 15px 20px #a7aace67,-10px -10px 24px #ffffffaa,inset 5px 5px 12px #fff9;transform:rotate(14deg);}
+    .document-illustration {position:relative;z-index:2;width:215px;height:224px;border-radius:24px;background:linear-gradient(145deg,#fff,#f4f3ff);box-shadow:14px 15px 26px #9596bd82,-7px -7px 18px #ffffffd9,inset 2px 2px 5px #fff;border:2px solid #fff;transform:rotate(-8deg);padding:22px 19px;}
+    .document-illustration .doc-top {display:flex;align-items:center;gap:10px;margin-bottom:19px;}
+    .doc-icon {width:37px;height:37px;border-radius:13px;background:#dfd7ff;box-shadow:inset 2px 2px 5px #fff,4px 4px 7px #d4ceec;display:grid;place-items:center;color:#7868dd;font-size:19px;}
+    .doc-title {font-size:13px;font-weight:850;line-height:1.25;color:#595579;}
+    .doc-sub {font-size:9px;font-weight:700;color:#9c9db4;}
+    .skeleton {height:10px;margin:11px 0;border-radius:15px;background:#e4e4f8;box-shadow:inset 2px 2px 4px #d1d0e5,inset -2px -2px 4px #fff;}
+    .skeleton.short {width:58%;}.skeleton.mid {width:79%;}.skeleton.tiny {width:45%;}
+    .float-tick {position:absolute;z-index:3;right:4%;bottom:20px;background:#d9f6e8;border:2px solid #fff;color:#479e78;padding:14px;border-radius:20px;box-shadow:9px 11px 15px #bcc1d0b8,-7px -7px 15px #fff;font-weight:850;font-size:13px;transform:rotate(8deg);}
+    .float-star {position:absolute;z-index:3;left:10%;top:12px;display:grid;place-items:center;width:59px;height:59px;border-radius:19px;background:#ffebd8;border:2px solid #fff;box-shadow:7px 9px 16px #c0bdd2a8,-4px -4px 9px #fff;font-size:29px;transform:rotate(-14deg);}
+    .stack {display:grid;gap:21px;margin-top:25px;}
+    .card {background:linear-gradient(145deg,#fbfaff,#f6f5ff);border:2px solid #ffffffd9;border-radius:28px;padding:27px 30px;box-shadow:var(--shadow);}
+    .card-head {display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px;}
+    .card-head p {color:var(--muted);font-size:13px;}
+    .step {display:inline-flex;align-items:center;gap:7px;border-radius:14px;background:#e8e2ff;box-shadow:inset 2px 2px 6px #cec6f4,inset -2px -2px 6px #fff;color:#7260c5;font-size:11px;padding:9px 13px;font-weight:850;white-space:nowrap;}
+    .badge {padding:9px 14px;border-radius:14px;background:#e7f8ec;color:#428668;font-size:12px;font-weight:850;box-shadow:inset 3px 3px 6px #cde9d9,inset -3px -3px 6px #fff;white-space:nowrap;}
+    .smallcaps {font-size:11px;letter-spacing:1.25px;color:#a0a0ba;text-transform:uppercase;font-weight:850;}
+    .muted {color:var(--muted);}.fine {color:var(--muted);font-size:12px;}.guide {font-size:13px;color:#717995;line-height:1.75;}
+    .mode-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:19px;}
+    .mode {text-align:left;display:flex;flex-direction:column;align-items:flex-start;min-height:147px;padding:17px 18px;border-radius:23px;background:linear-gradient(145deg,#fdfcff,#f1efff);border:2px solid #fff;box-shadow:var(--shadow-soft);color:var(--ink);transition:transform .16s,box-shadow .16s,background .16s;}
+    .mode:hover {transform:translateY(-3px);}
+    .mode.active {background:linear-gradient(145deg,#e9e2ff,#ded7ff);border-color:#c7b9ff;box-shadow:inset 4px 4px 10px #c8bef0,inset -4px -4px 10px #f9f6ff;}
+    .mode .emoji {font-size:23px;display:grid;place-items:center;width:49px;height:49px;border-radius:17px;background:#ded8ff;box-shadow:4px 5px 10px #cbc6e6,-3px -3px 8px #fff;border:1px solid #ffffffc7;margin-bottom:11px;}
+    .mode:nth-child(2) .emoji {background:#d5f6e5;}.mode:nth-child(3) .emoji {background:#ffe4d9;}
+    .mode strong {display:block;font-size:15px;font-weight:850;line-height:1.15;margin:0 0 5px;}
+    .mode span:not(.emoji) {font-size:12px;color:#7c82a0;}
+    .pane {padding:23px;border-radius:22px;border:2px dashed #d3c9ed;background:linear-gradient(145deg,#f1efff,#fbfaff);box-shadow:inset 5px 5px 12px #e3e0f1,inset -6px -6px 13px #fff;}
+    .pane-controls {display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:17px;}
+    .file-input {max-width:620px;background:#faf9ff;padding:11px;}
+    .file-input::file-selector-button {border:1px solid #d9d2fa;padding:9px 13px;border-radius:12px;background:#e4dcff;color:#6155ad;font-weight:800;margin-right:14px;cursor:pointer;}
+    .preview {display:block;max-width:100%;max-height:220px;object-fit:contain;margin-top:20px;border-radius:19px;border:4px solid #fff;box-shadow:var(--shadow-soft);}
+    .two {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+    .person {background:linear-gradient(145deg,#fff,#f5f4ff);border:1px solid #fff;border-radius:21px;overflow:hidden;margin:13px 0;box-shadow:var(--shadow-soft);}
+    .person summary {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 21px;list-style:none;cursor:pointer;background:linear-gradient(95deg,#eeeaff,#f8f7ff);}
+    .person summary::-webkit-details-marker {display:none;}
+    .person summary::after {content:'⌄';color:#7166b1;font-size:21px;font-weight:850;}
+    .person:not([open]) summary::after {content:'›';}
+    .person-name {color:#454867;font-size:14px;font-weight:850;overflow-wrap:anywhere;}
+    .person-body {padding:22px;}
+    .fields {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
+    .person-footer {display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:21px;padding-top:17px;border-top:1px dashed #dedaf3;}
+    .person-footer span {font-size:12px;color:var(--muted);}
+    .controls {display:flex;gap:13px;flex-wrap:wrap;align-items:center;}
+    .alert {margin-top:16px;border-radius:17px;padding:14px 18px;font-size:13px;line-height:1.6;box-shadow:inset 3px 3px 7px #ffffff55;}
+    .alert.info {background:#e8efff;color:#4f6296;border:1px solid #cdd8ff;}
+    .alert.success {background:#e0f8eb;color:#27795a;border:1px solid #b6ebd0;}
+    .alert.warning {background:#fff5df;color:#946b28;border:1px solid #f1ddb2;}
+    .alert.error {background:#ffe7eb;color:#a04e65;border:1px solid #fac8d3;}
+    .alert ul {margin:7px 0 0 18px;padding:0;}
+    .save-area {display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;}
+    .save-area h2 {margin-bottom:5px;}
+    .save-area .btn {min-height:54px;}
+    .login-box {max-width:790px;margin:25px auto 0;padding:30px 34px;}
+    .login-head {display:flex;align-items:flex-start;gap:19px;margin-bottom:17px;}
+    .login-icon {display:grid;place-items:center;flex:none;width:66px;height:66px;border-radius:23px;background:#e1d9ff;color:#725cc4;font-size:30px;box-shadow:6px 7px 14px #d0c9e6,-5px -5px 12px #fff,inset 2px 2px 4px #fff;}
+    .login-head p {color:var(--muted);font-size:13px;max-width:500px;}
+    .login-box form {display:flex;gap:13px;margin-top:20px;}
+    .login-box form input {flex:1;min-width:0;}
+    .login-box form .btn {min-width:155px;}
+    .login-fine {font-size:12px;color:#888eaa;margin-top:18px;padding-top:13px;border-top:1px dashed #e1ddf0;}
+    .footer {text-align:center;font-size:12px;color:#8a8fa7;margin-top:26px;padding:12px;}
+    @media(max-width:1000px) {.fields{grid-template-columns:repeat(3,minmax(0,1fr));}.hero{grid-template-columns:1fr 295px;padding:30px 29px;}}
+    @media(max-width:760px) {.page{padding:12px 14px 35px;}.hero{grid-template-columns:1fr;padding:27px;min-height:0;}.hero-visual{display:none;}.card{padding:22px 19px;}.fields{grid-template-columns:repeat(2,minmax(0,1fr));}.mode-grid{gap:10px;}.mode{padding:14px;min-height:142px;}.mode strong{font-size:13px;}.mode .emoji{width:43px;height:43px;font-size:21px;}.save-area{align-items:stretch;}.save-area .btn{width:100%;}}
+    @media(max-width:530px) {.topbar{align-items:flex-start;padding:7px 2px 20px;gap:12px;}.brand{gap:10px;}.brand-label{font-size:14px;}.brand-sub{font-size:9px;letter-spacing:.7px;}.logo{width:44px;height:44px;font-size:20px;border-radius:15px;}.header-right{max-width:150px;gap:7px;}.pill{font-size:10px;padding:8px 10px;white-space:normal;line-height:1.2;}.hero{border-radius:25px;padding:24px 23px;}.hero h1{letter-spacing:-1px;font-size:31px;}.hero-chips{gap:7px;}.chip{font-size:11px;padding:7px 10px;}.card{border-radius:24px;padding:20px 16px;}.card-head{gap:10px;flex-wrap:wrap;margin-bottom:17px;}.mode-grid{grid-template-columns:1fr;gap:10px;}.mode{display:grid;grid-template-columns:50px 1fr;column-gap:12px;align-items:center;min-height:0;padding:11px 14px;}.mode .emoji{grid-row:span 2;margin:0;}.mode strong{font-size:14px;margin:0;align-self:end;}.mode span:not(.emoji){grid-column:2;align-self:start;}.two,.fields{grid-template-columns:1fr;gap:13px;}.person-body{padding:18px 15px;}.person-footer{flex-wrap:wrap;}.login-box{padding:23px 18px;}.login-icon{width:52px;height:52px;font-size:24px;border-radius:16px;}.login-box form{flex-direction:column;}.login-box form .btn{width:100%;}.pane{padding:17px;}.file-input{max-width:100%;}.btn{width:auto;}}
+    @media(prefers-reduced-motion:reduce) {html{scroll-behavior:auto;}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+  </style>
 </head>
-<body class="bg-slate-50 min-h-screen py-8 px-4">
-
-    <div class="max-w-[95%] mx-auto bg-white shadow-lg rounded-2xl p-6 md:p-8">
-        <!-- Header -->
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-slate-800">Scan Kartu Keluarga (KK) dengan Vision AI</h1>
-            <p class="text-sm text-slate-500 mt-1">Ekstraksi otomatis menggunakan AI, hitung umur otomatis, dan simpan langsung ke Google Sheets</p>
+<body>
+  <div class="page">
+    <nav class="topbar" aria-label="Navigasi aplikasi">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">✦</div>
+        <div>
+          <div class="brand-label">Sistem Data Keluarga</div>
+          <div class="brand-sub">Digitalisasi desa • Vision AI</div>
         </div>
+      </div>
+      <div class="header-right">
+        <span id="connectionPill" class="pill off" role="status">Memeriksa koneksi…</span>
+        <button id="logoutBtn" class="btn btn-light btn-small" type="button" hidden>Keluar</button>
+      </div>
+    </nav>
 
-        <!-- Form Utama -->
-        <form id="kkForm" class="space-y-6">
-            
-            <!-- Bagian Kamera / Upload Foto KK -->
-            <div class="border-2 border-dashed border-emerald-400 rounded-xl p-4 text-center bg-emerald-50/50">
-                <label class="block cursor-pointer">
-                    <span class="text-emerald-800 font-semibold block mb-1">📷 Ambil Foto Kartu Keluarga Secara Utuh</span>
-                    <span class="text-xs text-slate-500 block mb-2">Pastikan seluruh tabel anggota keluarga terlihat jelas</span>
-                    <input type="file" id="fotoKK" accept="image/*" capture="environment" class="hidden">
-                    <span class="inline-block bg-emerald-600 text-white text-sm font-medium py-2 px-4 rounded-lg shadow hover:bg-emerald-700 transition">
-                        Buka Kamera / Pilih Berkas KK
-                    </span>
-                </label>
+    <header class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> PENDATAAN PENDUDUK • VERSI 2.2</div>
+        <h1>Data keluarga, <span>lebih mudah</span> dan tertata.</h1>
+        <p>Digitalisasi Kartu Keluarga dalam satu tempat. Ambil foto dari HP, baca dokumen dengan AI, periksa datanya, lalu simpan ke Google Sheets.</p>
+        <div class="hero-chips" aria-label="Fitur utama">
+          <span class="chip">📷 Kamera HP</span><span class="chip">✦ OCR &amp; AI</span><span class="chip">📁 PDF &amp; Word</span><span class="chip">✓ Validasi data</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-orb"></div>
+        <div class="float-star">✦</div>
+        <div class="document-illustration">
+          <div class="doc-top">
+            <div class="doc-icon">▤</div>
+            <div><div class="doc-title">Kartu Keluarga</div><div class="doc-sub">DOKUMEN DIGITAL</div></div>
+          </div>
+          <div class="skeleton"></div><div class="skeleton mid"></div><div class="skeleton short"></div><div class="skeleton"></div><div class="skeleton tiny"></div>
+        </div>
+        <div class="float-tick">✓&nbsp; Data terbaca</div>
+      </div>
+    </header>
 
-                <!-- Kotak Pratinjau Gambar -->
-                <div id="imagePreviewContainer" class="mt-4 hidden">
-                    <p class="text-xs text-slate-500 mb-1">Pratinjau Foto KK:</p>
-                    <img id="previewImg" class="max-h-48 mx-auto rounded border shadow-sm" alt="Preview KK">
-                    <p id="ocrStatus" class="text-xs text-emerald-600 font-medium mt-2 hidden">⏳ Sedang menganalisis dokumen dengan Vision AI, mohon tunggu...</p>
-                </div>
-            </div>
+    <section id="loginPanel" class="card login-box" hidden>
+      <div class="login-head"><div class="login-icon" aria-hidden="true">🔐</div><div>
+        <h2>Selamat datang, petugas! 👋</h2>
+        <p class="muted">Masuk terlebih dahulu untuk memulai pendataan. Data diproses oleh Google Apps Script dan Gemini, bukan disimpan di GitHub Pages.</p>
+      </div></div>
+      <form id="loginForm" autocomplete="off">
+        <input id="operatorPassword" aria-label="Kata sandi petugas" type="password" placeholder="Kata sandi petugas" required minlength="16" autocomplete="off">
+        <button id="loginBtn" class="btn btn-primary" type="submit">Masuk</button>
+      </form>
+      <p class="login-fine">🔒 Akses khusus petugas terotorisasi. Jangan gunakan dokumen KK asli sebelum keamanan dan kebijakan pemrosesan data disetujui.</p>
+      <div id="loginStatus" class="alert" role="alert" hidden></div>
+    </section>
 
-            <!-- Informasi Umum KK -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">No. Kartu Keluarga (KK)</label>
-                    <input type="text" id="no_kk" class="w-full px-3 py-2 border rounded-lg bg-white" placeholder="16 digit No KK" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nomor RT (Berlaku untuk seluruh anggota)</label>
-                    <select id="rt_umum" class="w-full px-3 py-2 border rounded-lg bg-white" required>
-                        <option value="">Pilih RT</option>
-                        <option value="RT 01">RT 01</option>
-                        <option value="RT 02">RT 02</option>
-                        <option value="RT 03">RT 03</option>
-                        <option value="RT 04">RT 04</option>
-                        <option value="RT 05">RT 05</option>
-                    </select>
-                </div>
-            </div>
+    <main id="appPanel" class="stack" hidden>
+      <section class="card">
+        <div class="card-head"><div>
+          <h2>1. Pilih cara memasukkan dokumen</h2>
+          <p>Gunakan kamera HP, file dokumen, atau isi langsung tanpa AI.</p>
+        </div><span class="step">LANGKAH 1</span></div>
+        <div class="mode-grid" role="group" aria-label="Metode input">
+          <button class="mode active" type="button" data-mode="camera" aria-pressed="true"><span class="emoji" aria-hidden="true">📷</span><strong>Kamera HP</strong><span>Foto KK langsung</span></button>
+          <button class="mode" type="button" data-mode="file" aria-pressed="false"><span class="emoji" aria-hidden="true">📄</span><strong>OCR Dokumen</strong><span>JPG, PNG, PDF, DOCX</span></button>
+          <button class="mode" type="button" data-mode="manual" aria-pressed="false"><span class="emoji" aria-hidden="true">⌨️</span><strong>Input manual</strong><span>Tanpa dokumen</span></button>
+        </div>
+        <div class="pane" id="cameraPane">
+          <h3>Ambil foto seluruh lembar Kartu Keluarga</h3>
+          <p class="guide">Pastikan tulisan terbaca, pencahayaan cukup, dan semua anggota keluarga terlihat.</p>
+          <div class="pane-controls">
+            <input class="file-input" type="file" id="cameraInput" accept="image/jpeg,image/png,image/webp,image/*" capture="environment" aria-label="Foto KK dari kamera">
+          </div>
+          <p class="fine" style="margin-top:10px">Memilih foto akan langsung menjalankan analisis Gemini.</p>
+        </div>
+        <div class="pane" id="filePane" hidden>
+          <h3>Unggah foto atau dokumen KK</h3>
+          <p class="guide">Mendukung JPG, PNG, WEBP, PDF, dan DOCX (Word baru). PDF hasil scan dibaca secara visual; teks dan gambar di dalam DOCX juga dapat dianalisis.</p>
+          <div class="pane-controls">
+            <input class="file-input" id="documentInput" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,.docx,image/jpeg,image/png,image/webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="Pilih file dokumen KK">
+            <button id="scanDocumentBtn" class="btn btn-primary" type="button">🔎 Baca dengan AI</button>
+          </div>
+          <p class="fine" style="margin-top:10px">Batas pemrosesan 4 MB per file. Format .doc lama perlu disimpan sebagai .docx atau PDF.</p>
+        </div>
+        <div class="pane" id="manualPane" hidden>
+          <h3>Entri tanpa scan</h3>
+          <p class="guide">Isi nomor KK, RT, dan data anggota pada formulir di bawah. Gunakan tombol “Tambah anggota” untuk setiap anggota keluarga.</p>
+          <div class="pane-controls"><button id="manualAddBtn" class="btn btn-plain" type="button">＋ Tambah anggota</button></div>
+        </div>
+        <img id="previewImg" class="preview" alt="Pratinjau foto KK yang dipilih" hidden>
+        <div id="scanStatus" class="alert" role="status" aria-live="polite" hidden></div>
+      </section>
 
-            <!-- Tabel Daftar Anggota Keluarga -->
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-lg font-semibold text-slate-800">Daftar Anggota Keluarga (Koreksi & Lengkapi Data)</h2>
-                    <button type="button" id="addRowBtn" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition">
-                        + Tambah Baris Manual
-                    </button>
-                </div>
-                <p class="text-xs text-slate-500 mb-3">Kolom umur akan terhitung otomatis saat Tanggal Lahir diisi.</p>
-                
-                <div class="overflow-x-auto border rounded-xl">
-                    <table class="w-full text-left border-collapse" id="anggotaTable">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 text-[11px] uppercase tracking-wider whitespace-nowrap">
-                                <th class="p-2 border">NIK</th>
-                                <th class="p-2 border">Nama Lengkap</th>
-                                <th class="p-2 border">JK</th>
-                                <th class="p-2 border">Tempat Lahir</th>
-                                <th class="p-2 border">Tgl Lahir</th>
-                                <th class="p-2 border">Umur</th>
-                                <th class="p-2 border">Agama</th>
-                                <th class="p-2 border">Pendidikan</th>
-                                <th class="p-2 border">Pekerjaan</th>
-                                <th class="p-2 border">Status Perkawinan</th>
-                                <th class="p-2 border">Hubungan KK</th>
-                                <th class="p-2 border">Nama Ayah</th>
-                                <th class="p-2 border">Nama Ibu</th>
-                                <th class="p-2 border text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="text-xs">
-                            <!-- Baris awal standar -->
-                            <tr>
-                                <td class="p-1.5 border"><input type="text" class="w-28 px-1.5 py-1 border rounded nik-val" placeholder="16 digit NIK"></td>
-                                <td class="p-1.5 border"><input type="text" class="w-32 px-1.5 py-1 border rounded nama-val" placeholder="Nama Lengkap"></td>
-                                <td class="p-1.5 border">
-                                    <select class="px-1 py-1 border rounded jk-val">
-                                        <option value="L">L</option>
-                                        <option value="P">P</option>
-                                    </select>
-                                </td>
-                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded tempat-val" placeholder="Tempat"></td>
-                                <td class="p-1.5 border"><input type="date" class="px-1 py-1 border rounded tgl-val"></td>
-                                <td class="p-1.5 border"><input type="text" class="w-16 px-1.5 py-1 border rounded bg-slate-100 font-semibold umur-val" placeholder="Otomatis" readonly></td>
-                                <td class="p-1.5 border">
-                                    <select class="px-1 py-1 border rounded agama-val">
-                                        <option value="ISLAM">ISLAM</option>
-                                        <option value="KRISTEN">KRISTEN</option>
-                                        <option value="KATOLIK">KATOLIK</option>
-                                        <option value="HINDU">HINDU</option>
-                                        <option value="BUDHA">BUDHA</option>
-                                        <option value="KONGHUCU">KONGHUCU</option>
-                                    </select>
-                                </td>
-                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pend-val" placeholder="Pendidikan"></td>
-                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pek-val" placeholder="Pekerjaan"></td>
-                                <td class="p-1.5 border">
-                                    <select class="px-1 py-1 border rounded status-nikah-val">
-                                        <option value="KAWIN">KAWIN</option>
-                                        <option value="BELUM KAWIN">BELUM KAWIN</option>
-                                        <option value="CERAI HIDUP">CERAI HIDUP</option>
-                                        <option value="CERAI MATI">CERAI MATI</option>
-                                    </select>
-                                </td>
-                                <td class="p-1.5 border">
-                                    <select class="px-1 py-1 border rounded status-hub-val">
-                                        <option value="KEPALA KELUARGA">KEPALA KELUARGA</option>
-                                        <option value="ISTRI">ISTRI</option>
-                                        <option value="ANAK">ANAK</option>
-                                        <option value="MENANTU">MENANTU</option>
-                                        <option value="CUCU">CUCU</option>
-                                        <option value="ORANG TUA">ORANG TUA</option>
-                                        <option value="LAINNYA">LAINNYA</option>
-                                    </select>
-                                </td>
-                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ayah-val" placeholder="Ayah"></td>
-                                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ibu-val" placeholder="Ibu"></td>
-                                <td class="p-1.5 border text-center"><button type="button" class="text-rose-600 hover:text-rose-800 font-bold px-2 py-1" onclick="hapusBaris(this)">Hapus</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <section class="card">
+        <div class="card-head"><div>
+          <h2>2. Informasi Kartu Keluarga</h2>
+          <p>Periksa nomor KK hasil pembacaan AI sebelum menyimpan.</p>
+        </div><span class="step">LANGKAH 2</span></div>
+        <div class="two">
+          <div><label for="no_kk">Nomor KK (16 digit) *</label><input id="no_kk" type="text" inputmode="numeric" maxlength="16" minlength="16" pattern="[0-9]{16}" placeholder="Masukkan 16 digit nomor KK" required></div>
+          <div><label for="rt_umum">RT domisili *</label><select id="rt_umum" required>
+            <option value="">Pilih RT</option><option value="RT 01">RT 01</option><option value="RT 02">RT 02</option><option value="RT 03">RT 03</option><option value="RT 04">RT 04</option><option value="RT 05">RT 05</option>
+          </select></div>
+        </div>
+        <div id="warningBox" class="alert warning" hidden><strong>Catatan hasil pembacaan AI:</strong><ul id="warningList"></ul></div>
+      </section>
 
-            <!-- Tombol Kirim Semua -->
-            <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md">
-                Simpan Seluruh Anggota Keluarga ke Google Sheets
-            </button>
-        </form>
+      <section class="card">
+        <div class="card-head"><div>
+          <h2>3. Koreksi data anggota keluarga</h2>
+          <p>AI dapat keliru membaca NIK, nama, tanggal lahir, atau kolom lainnya. Wajib verifikasi.</p>
+        </div><span id="memberCount" class="badge">0 anggota</span></div>
+        <div id="members" aria-live="polite"></div>
+        <div class="controls" style="margin-top:15px">
+          <button id="addMemberBtn" class="btn btn-plain" type="button">＋ Tambah anggota</button>
+          <button id="clearBtn" class="btn btn-danger" type="button">Hapus semua isian</button>
+        </div>
+      </section>
 
-        <div id="statusMessage" class="mt-4 text-center text-sm font-medium hidden"></div>
-    </div>
+      <section class="card">
+        <div class="save-area">
+          <div>
+            <h2 style="margin-bottom:4px">4. Simpan data yang sudah diperiksa</h2>
+            <p class="fine">Penyimpanan menolak NIK ganda. Nilai kosong tetap perlu diperiksa petugas sebelum diarsipkan.</p>
+          </div>
+          <button id="saveBtn" class="btn btn-primary" type="button">💾 Simpan ke Google Sheets</button>
+        </div>
+        <div id="saveStatus" class="alert" role="status" aria-live="polite" hidden></div>
+      </section>
+    </main>
+    <div class="footer">Digitalisasi KK V2.2 · Claymorphism · GitHub Pages + Google Apps Script · Wajib verifikasi data AI</div>
+  </div>
+  <script>
+  'use strict';
+  (function () {
+    // Ganti HANYA alamat GAS_WEBAPP_URL dengan URL /exec hasil deploy.
+    // Jangan menyimpan API key, sandi petugas, atau data KK dalam repositori GitHub.
+    const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/GANTI_DENGAN_URL_WEB_APP/exec';
+    const MAX_FILE_BYTES = 4 * 1024 * 1024;
+    const MAX_MEMBERS = 20;
+    const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const $ = (id) => document.getElementById(id);
+    let operatorPassword = ''; // hanya di memori; reload/login ulang
+    let busy = false;
+    let signedIn = false;
+    let bridgeWindow = null;
+    let bridgeOrigin = '';
+    let bridgeReady = false;
+    const bridgeChannel = randomHex(32);
+    const pending = new Map();
 
-    <!-- JavaScript Logika Frontend -->
-    <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjiLh1Tvyh1FTUkEZj3zTnry-MuGXxW2wt6JhtFWMriuBek2ZBcz46N5MeYqI521TNKA/exec'; // Ganti dengan URL Web App GAS Anda
-        const fotoKKInput = document.getElementById('fotoKK');
-        const previewImg = document.getElementById('previewImg');
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        const ocrStatus = document.getElementById('ocrStatus');
-        const tableBody = document.getElementById('tableBody');
-        const statusMessage = document.getElementById('statusMessage');
+    function randomHex(numBytes) {
+      const bytes = new Uint8Array(numBytes);
+      crypto.getRandomValues(bytes);
+      return [...bytes].map(v => v.toString(16).padStart(2,'0')).join('');
+    }
+    function isGoogleBridgeOrigin(origin) {
+      try {
+        const host = new URL(origin).hostname.toLowerCase();
+        return new URL(origin).protocol === 'https:' &&
+          (host === 'script.google.com' || host === 'script.googleusercontent.com' ||
+            host.endsWith('.script.googleusercontent.com') || host.endsWith('-script.googleusercontent.com'));
+      } catch (_) { return false; }
+    }
+    function setAlert(element, text, kind = 'info') {
+      element.hidden = false;
+      element.className = 'alert ' + kind;
+      element.textContent = text;
+    }
+    function clearAlert(element) { element.hidden = true; element.textContent = ''; }
+    function setConnection(connected, message) {
+      const pill = $('connectionPill');
+      pill.textContent = message;
+      pill.className = 'pill ' + (connected ? 'ok' : 'off');
+    }
+    function setSignedIn(value) {
+      signedIn = Boolean(value);
+      $('loginPanel').hidden = signedIn;
+      $('appPanel').hidden = !signedIn;
+      $('logoutBtn').hidden = !signedIn;
+      setConnection(signedIn, signedIn ? '● Petugas aktif' :
+        (bridgeReady ? '● Apps Script siap' : '○ Belum terhubung'));
+    }
+    function setBusy(value) {
+      busy = value;
+      ['saveBtn','scanDocumentBtn','addMemberBtn','manualAddBtn','clearBtn','loginBtn','logoutBtn']
+        .forEach(id => { $(id).disabled = busy; });
+      ['cameraInput','documentInput'].forEach(id => { $(id).disabled = busy; });
+    }
 
-        function hitungUmur(tglLahirString) {
-            if (!tglLahirString) return "";
-            const dob = new Date(tglLahirString);
-            const today = new Date();
-            if (isNaN(dob)) return "";
-            let age = today.getFullYear() - dob.getFullYear();
-            let m = today.getMonth() - dob.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-                age--;
-            }
-            return age >= 0 ? age + " Thn" : "0 Thn";
+    window.addEventListener('message', function (event) {
+      const msg = event.data;
+      if (!msg || msg.__kkBridge !== 'kk-v2.2' || msg.channel !== bridgeChannel ||
+          !isGoogleBridgeOrigin(event.origin)) return;
+      if (msg.type === 'ready' && !bridgeReady) {
+        bridgeWindow = event.source;
+        bridgeOrigin = event.origin;
+        bridgeReady = true;
+        setConnection(true, '● Apps Script siap');
+        clearAlert($('loginStatus'));
+        return;
+      }
+      if (msg.type !== 'response' || !bridgeReady || event.source !== bridgeWindow ||
+          event.origin !== bridgeOrigin) return;
+      const entry = pending.get(msg.requestId);
+      if (!entry) return;
+      pending.delete(msg.requestId);
+      clearTimeout(entry.timer);
+      const result = msg.result;
+      if (!result || result.status !== 'success') {
+        entry.reject(new Error(result && result.message || 'Gagal memproses permintaan Apps Script.'));
+      } else entry.resolve(result);
+    });
+
+    function api(action, payload = {}) {
+      if (!bridgeReady || !bridgeWindow) {
+        return Promise.reject(new Error('Penghubung Apps Script belum siap. Periksa URL /exec dan izin iframe.'));
+      }
+      return new Promise((resolve, reject) => {
+        const requestId = randomHex(32);
+        const timeoutMs = action === 'scan_ai' ? 240000 : 90000;
+        const timer = setTimeout(() => {
+          pending.delete(requestId);
+          reject(new Error('Apps Script tidak merespons. Periksa Executions dan Google Sheets sebelum mengulang.'));
+        }, timeoutMs);
+        pending.set(requestId, {resolve,reject,timer});
+        try {
+          bridgeWindow.postMessage({
+            __kkBridge:'kk-v2.2', channel:bridgeChannel, type:'request',
+            requestId, action,
+            password: action === 'login' ? payload.password : operatorPassword,
+            payload: action === 'login' ? {} : payload
+          }, bridgeOrigin);
+        } catch (err) {
+          clearTimeout(timer);
+          pending.delete(requestId);
+          reject(new Error('Tidak dapat mengirim permintaan ke iframe Apps Script.'));
         }
+      });
+    }
 
-        tableBody.addEventListener('change', function(e) {
-            if (e.target && e.target.classList.contains('tgl-val')) {
-                const row = e.target.closest('tr');
-                const umurInput = row.querySelector('.umur-val');
-                umurInput.value = hitungUmur(e.target.value);
-            }
-        });
-
-        document.getElementById('addRowBtn').addEventListener('click', function() {
-            tambahBarisTabel();
-        });
-
-        function tambahBarisTabel(data = {}) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="p-1.5 border"><input type="text" class="w-28 px-1.5 py-1 border rounded nik-val" value="${data.nik || ''}" placeholder="16 digit NIK"></td>
-                <td class="p-1.5 border"><input type="text" class="w-32 px-1.5 py-1 border rounded nama-val" value="${data.nama || ''}" placeholder="Nama Lengkap"></td>
-                <td class="p-1.5 border">
-                    <select class="px-1 py-1 border rounded jk-val">
-                        <option value="L" ${data.jk === 'L' ? 'selected' : ''}>L</option>
-                        <option value="P" ${data.jk === 'P' ? 'selected' : ''}>P</option>
-                    </select>
-                </td>
-                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded tempat-val" value="${data.tempat || ''}" placeholder="Tempat"></td>
-                <td class="p-1.5 border"><input type="date" class="px-1 py-1 border rounded tgl-val" value="${data.tgl || ''}"></td>
-                <td class="p-1.5 border"><input type="text" class="w-16 px-1.5 py-1 border rounded bg-slate-100 font-semibold umur-val" value="${data.tgl ? hitungUmur(data.tgl) : ''}" placeholder="Otomatis" readonly></td>
-                <td class="p-1.5 border">
-                    <select class="px-1 py-1 border rounded agama-val">
-                        <option value="ISLAM" ${data.agama === 'ISLAM' ? 'selected' : ''}>ISLAM</option>
-                        <option value="KRISTEN" ${data.agama === 'KRISTEN' ? 'selected' : ''}>KRISTEN</option>
-                        <option value="KATOLIK" ${data.agama === 'KATOLIK' ? 'selected' : ''}>KATOLIK</option>
-                        <option value="HINDU" ${data.agama === 'HINDU' ? 'selected' : ''}>HINDU</option>
-                        <option value="BUDHA" ${data.agama === 'BUDHA' ? 'selected' : ''}>BUDHA</option>
-                        <option value="KONGHUCU" ${data.agama === 'KONGHUCU' ? 'selected' : ''}>KONGHUCU</option>
-                    </select>
-                </td>
-                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pend-val" value="${data.pend || ''}" placeholder="Pendidikan"></td>
-                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded pek-val" value="${data.pek || ''}" placeholder="Pekerjaan"></td>
-                <td class="p-1.5 border">
-                    <select class="px-1 py-1 border rounded status-nikah-val">
-                        <option value="KAWIN" ${data.status_nikah === 'KAWIN' ? 'selected' : ''}>KAWIN</option>
-                        <option value="BELUM KAWIN" ${data.status_nikah === 'BELUM KAWIN' ? 'selected' : ''}>BELUM KAWIN</option>
-                        <option value="CERAI HIDUP" ${data.status_nikah === 'CERAI HIDUP' ? 'selected' : ''}>CERAI HIDUP</option>
-                        <option value="CERAI MATI" ${data.status_nikah === 'CERAI MATI' ? 'selected' : ''}>CERAI MATI</option>
-                    </select>
-                </td>
-                <td class="p-1.5 border">
-                    <select class="px-1 py-1 border rounded status-hub-val">
-                        <option value="KEPALA KELUARGA" ${data.hub === 'KEPALA KELUARGA' ? 'selected' : ''}>KEPALA KELUARGA</option>
-                        <option value="ISTRI" ${data.hub === 'ISTRI' ? 'selected' : ''}>ISTRI</option>
-                        <option value="ANAK" ${data.hub === 'ANAK' ? 'selected' : ''}>ANAK</option>
-                        <option value="MENANTU" ${data.hub === 'MENANTU' ? 'selected' : ''}>MENANTU</option>
-                        <option value="CUCU" ${data.hub === 'CUCU' ? 'selected' : ''}>CUCU</option>
-                        <option value="ORANG TUA" ${data.hub === 'ORANG TUA' ? 'selected' : ''}>ORANG TUA</option>
-                        <option value="LAINNYA" ${data.hub === 'LAINNYA' ? 'selected' : ''}>LAINNYA</option>
-                    </select>
-                </td>
-                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ayah-val" value="${data.ayah || ''}" placeholder="Ayah"></td>
-                <td class="p-1.5 border"><input type="text" class="w-24 px-1.5 py-1 border rounded ibu-val" value="${data.ibu || ''}" placeholder="Ibu"></td>
-                <td class="p-1.5 border text-center"><button type="button" class="text-rose-600 hover:text-rose-800 font-bold px-2 py-1" onclick="hapusBaris(this)">Hapus</button></td>
-            `;
-            tableBody.appendChild(row);
+    function startup() {
+      setSignedIn(false);
+      if (GAS_WEBAPP_URL.includes('GANTI_DENGAN_URL_WEB_APP') ||
+          !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(GAS_WEBAPP_URL)) {
+        setConnection(false, '⚠ URL Apps Script belum diisi');
+        setAlert($('loginStatus'), 'Atur GAS_WEBAPP_URL pada index.html dengan alamat Web App Google Apps Script yang berakhir /exec.', 'warning');
+        return;
+      }
+      setConnection(false, '◌ Menghubungkan Apps Script…');
+      const frame = document.createElement('iframe');
+      frame.id = 'kkBridgeFrame';
+      frame.title = 'Penghubung aman Google Apps Script';
+      frame.setAttribute('aria-hidden', 'true');
+      frame.tabIndex = -1;
+      frame.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
+      frame.src = GAS_WEBAPP_URL + '?channel=' + encodeURIComponent(bridgeChannel);
+      document.body.appendChild(frame);
+      setTimeout(() => {
+        if (!bridgeReady) {
+          setConnection(false, '● Koneksi Apps Script gagal');
+          setAlert($('loginStatus'), 'Penghubung Apps Script tidak merespons. Periksa deployment Anyone, ALLOWED_PARENT_ORIGIN, browser memblokir iframe/cookies pihak ketiga, dan URL /exec. Jika browser memblokir embedding Google, dibutuhkan backend perantara.', 'error');
         }
+      }, 18000);
+    }
 
-        window.hapusBaris = function(btn) {
-            const row = btn.closest('tr');
-            if (tableBody.rows.length > 1) {
-                row.remove();
-            } else {
-                alert("Minimal harus ada satu baris data.");
-            }
-        };
+    $('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const password = $('operatorPassword').value;
+      if (!password || busy) return;
+      setBusy(true); clearAlert($('loginStatus'));
+      try {
+        await api('login', {password});
+        operatorPassword = password;
+        $('operatorPassword').value = '';
+        setSignedIn(true);
+      } catch (err) {
+        operatorPassword = '';
+        setAlert($('loginStatus'), err.message, 'error');
+      } finally { setBusy(false); }
+    });
 
-        // Upload & Kirim Foto ke Google Apps Script (Vision AI)
-        fotoKKInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+    $('logoutBtn').addEventListener('click', function () {
+      if (busy) return;
+      operatorPassword = '';
+      resetForm(); setSignedIn(false);
+    });
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                previewImg.src = event.target.result;
-                previewContainer.classList.remove('hidden');
-                ocrStatus.classList.remove('hidden');
-                ocrStatus.textContent = "⚡ Mengirim gambar ke Vision AI untuk dianalisis...";
-
-                const base64Data = event.target.result.split(',')[1];
-                const mimeType = file.type;
-
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'scan_ai', image: base64Data, mimeType: mimeType })
-                })
-                .then(response => response.json())
-                .then(result => {
-                    ocrStatus.classList.add('hidden');
-                    if (result.status === 'success') {
-                        const data = result.data;
-                        document.getElementById('no_kk').value = data.no_kk || '';
-                        
-                        tableBody.innerHTML = '';
-                        if (data.anggota && data.anggota.length > 0) {
-                            data.anggota.forEach( anggota => {
-                                tambahBarisTabel(anggota);
-                            });
-                        } else {
-                            tambahBarisTabel();
-                        }
-                        alert("Pemindaian Vision AI berhasil! Silakan periksa kembali datanya.");
-                    } else {
-                        alert("Gagal membaca KK: " + result.message);
-                    }
-                })
-                .catch(err => {
-                    ocrStatus.classList.add('hidden');
-                    console.error(err);
-                    alert("Terjadi kesalahan koneksi saat memindai.");
-                });
-            };
-            reader.readAsDataURL(file);
+    document.querySelectorAll('.mode').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.mode').forEach(b => {
+          const selected = b === button;
+          b.classList.toggle('active', selected);
+          b.setAttribute('aria-pressed', String(selected));
         });
+        const mode = button.dataset.mode;
+        $('cameraPane').hidden = mode !== 'camera';
+        $('filePane').hidden = mode !== 'file';
+        $('manualPane').hidden = mode !== 'manual';
+      });
+    });
 
-        // Simpan Data ke Google Sheets
-        document.getElementById('kkForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const no_kk = document.getElementById('no_kk').value;
-            const rt_umum = document.getElementById('rt_umum').value;
-            const rows = tableBody.querySelectorAll('tr');
-            let anggotaList = [];
-
-            rows.forEach(row => {
-                anggotaList.push({
-                    nik: row.querySelector('.nik-val').value,
-                    nama: row.querySelector('.nama-val').value,
-                    jk: row.querySelector('.jk-val').value,
-                    tempat: row.querySelector('.tempat-val').value,
-                    tgl: row.querySelector('.tgl-val').value,
-                    umur: row.querySelector('.umur-val').value,
-                    agama: row.querySelector('.agama-val').value,
-                    pend: row.querySelector('.pend-val').value,
-                    pek: row.querySelector('.pek-val').value,
-                    status_nikah: row.querySelector('.status-nikah-val').value,
-                    hub: row.querySelector('.status-hub-val').value,
-                    ayah: row.querySelector('.ayah-val').value,
-                    ibu: row.querySelector('.ibu-val').value
-                });
-            });
-
-            statusMessage.classList.remove('hidden');
-            statusMessage.className = "mt-4 text-center text-sm font-medium text-blue-600";
-            statusMessage.textContent = "Menyimpan data ke Google Sheets...";
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'save_data', no_kk: no_kk, rt: rt_umum, anggota: anggotaList })
-            })
-            .then(res => res.json())
-            .then(res => {
-                if(res.status === 'success') {
-                    statusMessage.className = "mt-4 text-center text-sm font-medium text-emerald-600";
-                    statusMessage.textContent = "Berhasil! Seluruh anggota keluarga tersimpan ke Google Sheets.";
-                    document.getElementById('kkForm').reset();
-                    previewContainer.classList.add('hidden');
-                    tableBody.innerHTML = '';
-                    tambahBarisTabel();
-                } else {
-                    statusMessage.className = "mt-4 text-center text-sm font-medium text-rose-600";
-                    statusMessage.textContent = "Gagal menyimpan: " + res.message;
-                }
-            })
-            .catch(err => {
-                statusMessage.className = "mt-4 text-center text-sm font-medium text-rose-600";
-                statusMessage.textContent = "Terjadi kesalahan jaringan.";
-            });
+    const enumOptions = {
+      jk:[['','Belum dipilih'],['L','Laki-laki'],['P','Perempuan']],
+      agama:[['','Belum dipilih'],['ISLAM','ISLAM'],['KRISTEN','KRISTEN'],['KATOLIK','KATOLIK'],['HINDU','HINDU'],['BUDDHA','BUDDHA'],['KONGHUCU','KONGHUCU']],
+      status_nikah:[['','Belum dipilih'],['KAWIN','KAWIN'],['BELUM KAWIN','BELUM KAWIN'],['CERAI HIDUP','CERAI HIDUP'],['CERAI MATI','CERAI MATI']],
+      hub:[['','Belum dipilih'],['KEPALA KELUARGA','KEPALA KELUARGA'],['ISTRI','ISTRI'],['ANAK','ANAK'],['MENANTU','MENANTU'],['CUCU','CUCU'],['ORANG TUA','ORANG TUA'],['LAINNYA','LAINNYA']]
+    };
+    const textFields = [
+      ['nik','NIK *','text','16 digit NIK'], ['nama','Nama lengkap *','text','Nama sesuai KK'],
+      ['jk','Jenis kelamin','select',''], ['tempat','Tempat lahir','text',''],
+      ['tgl','Tanggal lahir','date',''], ['umur','Umur (otomatis)','readonly',''],
+      ['agama','Agama','select',''], ['pend','Pendidikan','text',''],
+      ['pek','Pekerjaan','text',''], ['status_nikah','Status perkawinan','select',''],
+      ['hub','Hubungan KK','select',''], ['ayah','Nama ayah','text',''],
+      ['ibu','Nama ibu','text','']
+    ];
+    function calcAge(iso) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '')) return '';
+      const [y,m,d] = iso.split('-').map(Number);
+      const now = new Date();
+      let years = now.getFullYear()-y;
+      if (now.getMonth()+1 < m || (now.getMonth()+1 === m && now.getDate() < d)) years--;
+      return years >= 0 && years < 150 ? years + ' tahun' : '';
+    }
+    function updateTitles() {
+      const cards = [...$('members').querySelectorAll('.person')];
+      cards.forEach((card, i) => {
+        const name = card.querySelector('[data-field="nama"]').value.trim();
+        card.querySelector('.person-name').textContent = 'Anggota ' + (i + 1) + (name ? ' — ' + name : ' — Belum diisi');
+      });
+      $('memberCount').textContent = cards.length + ' anggota';
+    }
+    function addMember(data = {}) {
+      if ($('members').children.length >= MAX_MEMBERS) {
+        setAlert($('scanStatus'), 'Maksimal 20 anggota per formulir.', 'warning'); return;
+      }
+      const card = document.createElement('details');
+      card.className = 'person';
+      card.open = true;
+      const summary = document.createElement('summary');
+      const name = document.createElement('span');
+      name.className = 'person-name';
+      name.textContent = 'Anggota keluarga';
+      summary.appendChild(name);
+      const body = document.createElement('div');
+      body.className = 'person-body';
+      const grid = document.createElement('div');
+      grid.className = 'fields';
+      textFields.forEach(([field, label, type, placeholder]) => {
+        const block = document.createElement('div');
+        const labelEl = document.createElement('label');
+        const inputId = 'field-' + field + '-' + cryptoRandomId();
+        labelEl.htmlFor = inputId;
+        labelEl.textContent = label;
+        let control;
+        if (type === 'select') {
+          control = document.createElement('select');
+          enumOptions[field].forEach(([val, caption]) => {
+            const option = document.createElement('option');
+            option.value = val;
+            option.textContent = caption;
+            control.appendChild(option);
+          });
+        } else {
+          control = document.createElement('input');
+          control.type = type === 'readonly' ? 'text' : type;
+          control.placeholder = placeholder;
+          if (type === 'readonly') control.readOnly = true;
+        }
+        control.id = inputId;
+        control.dataset.field = field;
+        if (field === 'nik') { control.maxLength = 16; control.inputMode = 'numeric'; }
+        if (field === 'nama') control.maxLength = 120;
+        if (field === 'tgl') {
+          const today = new Date();
+          control.max = String(today.getFullYear()) + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+        }
+        if (field !== 'umur') {
+          control.value = (data[field] === undefined || data[field] === null) ? '' : String(data[field]);
+        }
+        block.appendChild(labelEl);
+        block.appendChild(control);
+        grid.appendChild(block);
+      });
+      const footer = document.createElement('div');
+      footer.className = 'person-footer';
+      const hint = document.createElement('span');
+      hint.textContent = 'Periksa ulang NIK, nama, dan tanggal lahir.';
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'btn btn-danger btn-small';
+      remove.textContent = 'Hapus anggota';
+      remove.addEventListener('click', () => {
+        if ($('members').children.length <= 1) {
+          setAlert($('scanStatus'), 'Minimal satu anggota harus tetap tersedia.', 'warning'); return;
+        }
+        card.remove(); updateTitles();
+      });
+      footer.appendChild(hint); footer.appendChild(remove);
+      body.appendChild(grid); body.appendChild(footer);
+      card.appendChild(summary); card.appendChild(body);
+      $('members').appendChild(card);
+      const birthday = card.querySelector('[data-field="tgl"]');
+      const age = card.querySelector('[data-field="umur"]');
+      age.value = calcAge(birthday.value);
+      birthday.addEventListener('change', () => { age.value = calcAge(birthday.value); });
+      card.querySelector('[data-field="nama"]').addEventListener('input', updateTitles);
+      updateTitles();
+      return card;
+    }
+    function cryptoRandomId() {
+      // Hanya untuk identitas elemen label DOM, bukan token keamanan.
+      return Math.random().toString(36).slice(2, 10);
+    }
+    function collectMembers() {
+      return [...$('members').querySelectorAll('.person')].map(card => {
+        const entry = {};
+        textFields.forEach(([field]) => {
+          if (field !== 'umur') entry[field] = card.querySelector('[data-field="' + field + '"]').value.trim();
         });
-    </script>
+        return entry;
+      });
+    }
+    function hasAnyData() {
+      return $('no_kk').value.trim() || collectMembers().some(m => m.nik || m.nama);
+    }
+    function resetForm() {
+      $('no_kk').value = '';
+      $('rt_umum').value = '';
+      $('members').replaceChildren();
+      addMember();
+      clearAlert($('scanStatus')); clearAlert($('saveStatus'));
+      $('warningBox').hidden = true;
+      $('warningList').replaceChildren();
+      $('cameraInput').value = '';
+      $('documentInput').value = '';
+      $('previewImg').hidden = true;
+      if ($('previewImg').dataset.objectUrl) URL.revokeObjectURL($('previewImg').dataset.objectUrl);
+      delete $('previewImg').dataset.objectUrl;
+      $('previewImg').removeAttribute('src');
+    }
+    $('addMemberBtn').addEventListener('click', () => addMember());
+    $('manualAddBtn').addEventListener('click', () => addMember());
+    $('clearBtn').addEventListener('click', () => {
+      if (!hasAnyData() || confirm('Hapus seluruh isian yang belum disimpan?')) resetForm();
+    });
+
+    function inferMime(file) {
+      const name = file.name.toLowerCase();
+      if (/\.pdf$/.test(name)) return 'application/pdf';
+      if (/\.docx$/.test(name)) return DOCX_MIME;
+      if (/\.jpe?g$/.test(name)) return 'image/jpeg';
+      if (/\.png$/.test(name)) return 'image/png';
+      if (/\.webp$/.test(name)) return 'image/webp';
+      return file.type || '';
+    }
+    function readFileBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.onerror = () => reject(new Error('Gagal membaca berkas pada perangkat.'));
+        reader.readAsDataURL(blob);
+      });
+    }
+    async function shrinkPhoto(file) {
+      // Foto HP sering 6-15MB. Kecilkan tanpa mengirim data ke layanan eksternal.
+      // Teks kecil pada KK dapat hilang bila kualitas foto memang terlalu rendah.
+      const url = URL.createObjectURL(file);
+      let img;
+      try {
+        img = new Image();
+        img.src = url;
+        await img.decode();
+        const width = img.naturalWidth, height = img.naturalHeight;
+        if (!width || !height) throw new Error('Ukuran gambar tidak valid.');
+        const factor = Math.min(1, 3200 / Math.max(width, height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(width * factor));
+        canvas.height = Math.max(1, Math.round(height * factor));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Browser tidak mendukung pemrosesan foto.');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const jpeg = await new Promise((resolve, reject) => {
+          canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Gagal mengompres foto.')), 'image/jpeg', 0.89);
+        });
+        return jpeg;
+      } finally { URL.revokeObjectURL(url); }
+    }
+    function showWarnings(warnings) {
+      const items = Array.isArray(warnings) ? warnings : [];
+      $('warningList').replaceChildren();
+      items.slice(0,20).forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = String(item);
+        $('warningList').appendChild(li);
+      });
+      $('warningBox').hidden = !items.length;
+    }
+    async function scanFile(file) {
+      if (!file || busy) return;
+      const mime = inferMime(file);
+      if (!['image/jpeg','image/png','image/webp','application/pdf',DOCX_MIME].includes(mime)) {
+        setAlert($('scanStatus'), 'Format tidak didukung. Gunakan JPG, PNG, WEBP, PDF, atau DOCX.', 'error'); return;
+      }
+      if (file.size > MAX_FILE_BYTES && !mime.startsWith('image/')) {
+        setAlert($('scanStatus'), 'Ukuran file maksimum 4 MB. Kompres atau pisahkan dokumen.', 'error'); return;
+      }
+      setBusy(true);
+      clearAlert($('saveStatus'));
+      setAlert($('scanStatus'), 'Menyiapkan dokumen untuk dibaca...', 'info');
+      try {
+        let inputFile = file;
+        let sendMime = mime;
+        if (mime.startsWith('image/')) {
+          inputFile = await shrinkPhoto(file);
+          sendMime = 'image/jpeg';
+          const preview = $('previewImg');
+          if (preview.dataset.objectUrl) URL.revokeObjectURL(preview.dataset.objectUrl);
+          preview.dataset.objectUrl = URL.createObjectURL(inputFile);
+          preview.src = preview.dataset.objectUrl;
+          preview.hidden = false;
+        } else {
+          $('previewImg').hidden = true;
+        }
+        if (inputFile.size > MAX_FILE_BYTES) {
+          throw new Error('Berkas masih lebih besar dari 4 MB. Gunakan foto yang lebih kecil.');
+        }
+        const fileBase64 = await readFileBase64(inputFile);
+        setAlert($('scanStatus'), 'Gemini sedang membaca isi dokumen. Jangan tutup halaman...', 'info');
+        const result = await api('scan_ai', {mimeType: sendMime, fileBase64});
+        const doc = result.data || {};
+        if (hasAnyData() && !confirm('Hasil AI akan mengganti data KK/anggota yang sudah ada pada formulir. Lanjutkan?')) {
+          setAlert($('scanStatus'), 'Pembacaan selesai. Hasil tidak diterapkan karena dibatalkan.', 'warning');
+          return;
+        }
+        $('no_kk').value = String(doc.no_kk || '');
+        $('members').replaceChildren();
+        if (Array.isArray(doc.anggota) && doc.anggota.length) {
+          doc.anggota.slice(0,MAX_MEMBERS).forEach(m => addMember(m));
+        } else addMember();
+        showWarnings(doc.peringatan);
+        setAlert($('scanStatus'), 'Dokumen selesai dibaca. Periksa NIK, nama, tanggal lahir, dan RT sebelum menyimpan.', 'success');
+        $('no_kk').focus();
+      } catch (err) {
+        setAlert($('scanStatus'), err.message, 'error');
+      } finally { setBusy(false); }
+    }
+    $('cameraInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) scanFile(file);
+    });
+    $('scanDocumentBtn').addEventListener('click', () => {
+      const file = $('documentInput').files && $('documentInput').files[0];
+      if (!file) { setAlert($('scanStatus'), 'Pilih dokumen sebelum menekan Baca dengan AI.', 'warning'); return; }
+      scanFile(file);
+    });
+
+    $('saveBtn').addEventListener('click', async () => {
+      if (busy || !signedIn) return;
+      const no_kk = $('no_kk').value.trim();
+      const rt = $('rt_umum').value;
+      const anggota = collectMembers();
+      if (!/^\d{16}$/.test(no_kk)) {
+        setAlert($('saveStatus'), 'Nomor KK wajib tepat 16 digit.', 'error'); $('no_kk').focus(); return;
+      }
+      if (!rt) { setAlert($('saveStatus'), 'Pilih RT terlebih dahulu.', 'error'); $('rt_umum').focus(); return; }
+      if (!anggota.length || anggota.length > MAX_MEMBERS) {
+        setAlert($('saveStatus'), 'Jumlah anggota harus 1 sampai 20.', 'error'); return;
+      }
+      for (let i=0; i<anggota.length; i++) {
+        if (!/^\d{16}$/.test(anggota[i].nik)) {
+          setAlert($('saveStatus'), 'NIK anggota ke-' + (i+1) + ' harus 16 digit.', 'error'); return;
+        }
+        if (!anggota[i].nama) {
+          setAlert($('saveStatus'), 'Nama anggota ke-' + (i+1) + ' belum diisi.', 'error'); return;
+        }
+      }
+      if (!confirm('Anda sudah memeriksa data ' + anggota.length + ' anggota dan ingin menyimpan ke Google Sheets?')) return;
+      setBusy(true);
+      setAlert($('saveStatus'), 'Menyimpan data dan memeriksa kemungkinan NIK ganda...', 'info');
+      try {
+        const result = await api('save_data', {no_kk,rt,anggota});
+        setAlert($('saveStatus'), result.message || 'Data tersimpan.', 'success');
+        // Jangan hapus status keberhasilan setelah reset.
+        const message = $('saveStatus').textContent;
+        resetForm();
+        setAlert($('saveStatus'), message, 'success');
+      } catch (err) {
+        setAlert($('saveStatus'), err.message + (err.message.includes('koneksi') ? ' Jika ragu, periksa Sheets sebelum mengirim ulang.' : ''), 'error');
+      } finally { setBusy(false); }
+    });
+
+    addMember();
+    startup();
+  })();
+  </script>
 </body>
 </html>
