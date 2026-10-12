@@ -375,7 +375,7 @@
 
     function startup() {
       setSignedIn(false);
-      if (GAS_WEBAPP_URL.includes('GANTI_DENGAN_URL_WEB_APP') ||
+      if (GAS_WEBAPP_URL.includes('https://script.google.com/macros/s/AKfycbwsvPxM2ZWGDf3eVoWapsFvO55TFDSND_uWzH4-wpWm0kCTIpMvk8WxFH1iN_fZAnVV/exec') ||
           !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(GAS_WEBAPP_URL)) {
         setConnection(false, '⚠ URL Apps Script belum diisi');
         setAlert($('loginStatus'), 'Atur GAS_WEBAPP_URL pada index.html dengan alamat Web App Google Apps Script yang berakhir /exec.', 'warning');
