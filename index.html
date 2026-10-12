@@ -346,41 +346,35 @@
       } else entry.resolve(result);
     });
 
-    function api(action, payload = {}) {
-      if (!bridgeReady || !bridgeWindow) {
-        return Promise.reject(new Error('Penghubung Apps Script belum siap. Periksa URL /exec dan izin iframe.'));
-      }
-      return new Promise((resolve, reject) => {
-        const requestId = randomHex(32);
-        const timeoutMs = action === 'scan_ai' ? 240000 : 90000;
-        const timer = setTimeout(() => {
-          pending.delete(requestId);
-          reject(new Error('Apps Script tidak merespons. Periksa Executions dan Google Sheets sebelum mengulang.'));
-        }, timeoutMs);
-        pending.set(requestId, {resolve,reject,timer});
-        try {
-          bridgeWindow.postMessage({
-            __kkBridge:'kk-v2.2', channel:bridgeChannel, type:'request',
-            requestId, action,
-            password: action === 'login' ? payload.password : operatorPassword,
-            payload: action === 'login' ? {} : payload
-          }, bridgeOrigin);
-        } catch (err) {
-          clearTimeout(timer);
-          pending.delete(requestId);
-          reject(new Error('Tidak dapat mengirim permintaan ke iframe Apps Script.'));
-        }
-      });
-    }
-
+    async function api(action, payload = {}) {
+  const response = await fetch(GAS_WEBAPP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      action: action,
+      password: action === 'login' ? payload.password : operatorPassword,
+      payload: action === 'login' ? {} : payload
+    })
+  });
+  if (!response.ok) {
+    throw new Error('Gagal terhubung ke Google Apps Script (HTTP ' + response.status + ').');
+  }
+  const result = await response.json();
+  if (result.status !== 'success') {
+    throw new Error(result.message || 'Terjadi kesalahan pada Apps Script.');
+  }
+  return result;
+}
     function startup() {
-      setSignedIn(false);
-      if (GAS_WEBAPP_URL.includes('GANTI_DENGAN_URL_WEB_APP') ||
-          !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(GAS_WEBAPP_URL)) {
-        setConnection(false, '⚠ URL Apps Script belum diisi');
-        setAlert($('loginStatus'), 'Atur GAS_WEBAPP_URL pada index.html dengan alamat Web App Google Apps Script yang berakhir /exec.', 'warning');
-        return;
-      }
+  setSignedIn(false);
+  if (GAS_WEBAPP_URL.includes('GANTI_DENGAN_URL_WEB_APP') ||
+      !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(GAS_WEBAPP_URL)) {
+    setConnection(false, '⚠ URL Apps Script belum diisi');
+    setAlert($('loginStatus'), 'Atur GAS_WEBAPP_URL pada index.html dengan alamat Web App Google Apps Script yang berakhir /exec.', 'warning');
+    return;
+  }
+  setConnection(true, '● Apps Script siap');
+}
       setConnection(false, '◌ Menghubungkan Apps Script…');
       const frame = document.createElement('iframe');
       frame.id = 'kkBridgeFrame';
