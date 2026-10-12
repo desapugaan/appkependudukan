@@ -269,7 +269,7 @@
   (function () {
     // Ganti HANYA alamat GAS_WEBAPP_URL dengan URL /exec hasil deploy.
     // Jangan menyimpan API key, sandi petugas, atau data KK dalam repositori GitHub.
-    const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwsvPxM2ZWGDf3eVoWapsFvO55TFDSND_uWzH4-wpWm0kCTIpMvk8WxFH1iN_fZAnVV/exec';
+    const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/GANTI_DENGAN_URL_WEB_APP/exec';
     const MAX_FILE_BYTES = 4 * 1024 * 1024;
     const MAX_MEMBERS = 20;
     const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -375,7 +375,7 @@
 
     function startup() {
       setSignedIn(false);
-      if (GAS_WEBAPP_URL.includes('https://script.google.com/macros/s/AKfycbwsvPxM2ZWGDf3eVoWapsFvO55TFDSND_uWzH4-wpWm0kCTIpMvk8WxFH1iN_fZAnVV/exec') ||
+      if (GAS_WEBAPP_URL.includes('GANTI_DENGAN_URL_WEB_APP') ||
           !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(GAS_WEBAPP_URL)) {
         setConnection(false, '⚠ URL Apps Script belum diisi');
         setAlert($('loginStatus'), 'Atur GAS_WEBAPP_URL pada index.html dengan alamat Web App Google Apps Script yang berakhir /exec.', 'warning');
